@@ -44,3 +44,6 @@ samples/
 .Trashes
 ehthumbs.db
 Thumbs.db
+
+# Ignore wiki document
+docs/wiki.md
