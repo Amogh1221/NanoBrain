@@ -74,9 +74,9 @@ where $\theta$ represents the trainable weights of the neural network and $z_t \
 
 Training an LLM consists of minimizing the empirical cross-entropy loss over a corpus of $T$ tokens:
 
-$$\mathcal{L}_{CE}(\theta) = -\frac{1}{T} \sum_{t=1}^T \log P(x_t^* \mid x_1^*, \dots, x_{t-1}^*; \theta)$$
+$$\mathcal{L}_{CE}(\theta) = -\frac{1}{T} \sum_{t=1}^T \log P(x_t^{\text{target}} \mid x_1, \dots, x_{t-1}; \theta)$$
 
-where $x_t^*$ is the target ground-truth token index at position $t$.
+where $x_t^{\text{target}}$ is the target ground-truth token index at position $t$.
 
 ```
 Text Sequence: "The quick brown fox jumps"
