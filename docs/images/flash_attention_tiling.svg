@@ -1,44 +1,91 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 480" width="100%" height="100%" style="background-color: #0d1117; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
   <style>
     .title { font-size: 20px; font-weight: bold; fill: #58a6ff; text-anchor: middle; }
-    .box-title { font-size: 15px; font-weight: bold; fill: #58a6ff; }
-    .box-text { font-size: 13px; fill: #c9d1d9; }
-    .highlight { font-weight: bold; fill: #3fb950; }
+    .box-title { font-size: 15px; font-weight: bold; fill: #ffffff; text-anchor: middle; }
+    .box-text { font-size: 12px; fill: #c9d1d9; text-anchor: middle; }
+    .sub-text { font-size: 11px; fill: #8b949e; text-anchor: middle; }
+    .arrow { stroke: #58a6ff; stroke-width: 2; marker-end: url(#arrowhead); }
+    .cross { stroke: #f85149; stroke-width: 4; }
   </style>
 
   <defs>
+    <marker id="arrowhead" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+      <polygon points="0 0, 8 3, 0 6" fill="#58a6ff" />
+    </marker>
     <linearGradient id="grad-sram" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#161b22" />
-      <stop offset="100%" stop-color="#0d1117" />
+      <stop offset="0%" stop-color="#238636" />
+      <stop offset="100%" stop-color="#161b22" />
     </linearGradient>
   </defs>
 
-  <text x="450" y="40" class="title">GPU Memory Bandwidth &amp; FlashAttention Tiled Execution</text>
+  <text x="450" y="30" class="title">FlashAttention: Fusing Softmax to Avoid O(N²) HBM Read/Writes</text>
 
-  <!-- SRAM Box (Fast) -->
-  <rect x="50" y="70" width="800" height="170" rx="10" fill="url(#grad-sram)" stroke="#3fb950" stroke-width="2"/>
-  <text x="70" y="100" class="box-title" style="fill: #3fb950;">⚡ GPU On-Chip SRAM (L1 Cache / Fast Execution)</text>
-  <text x="90" y="130" class="box-text">• <tspan class="highlight">Capacity:</tspan> ~20 MB - 100 MB (Ultra-small)</text>
-  <text x="90" y="155" class="box-text">• <tspan class="highlight">Bandwidth:</tspan> ~19,000 GB/sec (Ultra-fast direct SM access)</text>
-  <text x="90" y="195" class="box-text" style="fill: #7ee787; font-weight: 600;">
-    FlashAttention Tiling Solution: Load tiles of Q_i, K_j, V_j into SRAM → Compute partial Softmax &amp; O_i → Write back final O only.
-  </text>
-
-  <!-- Connection Arrow -->
-  <g transform="translate(450, 245)">
-    <line x1="0" y1="0" x2="0" y2="35" stroke="#58a6ff" stroke-width="3" stroke-dasharray="6,4"/>
-    <polygon points="-6 35, 6 35, 0 45" fill="#58a6ff"/>
-    <polygon points="-6 0, 6 0, 0 -10" fill="#58a6ff"/>
+  <!-- Left Side: Standard Attention (O(N^2)) -->
+  <rect x="40" y="80" width="380" height="350" rx="10" fill="#161b22" stroke="#30363d" stroke-width="2"/>
+  <text x="230" y="110" class="box-title" style="fill:#f85149;">Standard Attention (Memory Bottleneck)</text>
+  
+  <rect x="130" y="150" width="200" height="200" rx="8" fill="#21262d" stroke="#30363d"/>
+  
+  <!-- Big Grid -->
+  <g transform="translate(140, 160)">
+    <!-- 4x4 Grid representation -->
+    <rect x="0" y="0" width="40" height="40" fill="#0d1117" stroke="#30363d"/>
+    <rect x="45" y="0" width="40" height="40" fill="#0d1117" stroke="#30363d"/>
+    <rect x="90" y="0" width="40" height="40" fill="#0d1117" stroke="#30363d"/>
+    <rect x="135" y="0" width="40" height="40" fill="#0d1117" stroke="#30363d"/>
+    <rect x="0" y="45" width="40" height="40" fill="#0d1117" stroke="#30363d"/>
+    <rect x="45" y="45" width="40" height="40" fill="#0d1117" stroke="#30363d"/>
+    <rect x="90" y="45" width="40" height="40" fill="#0d1117" stroke="#30363d"/>
+    <rect x="135" y="45" width="40" height="40" fill="#0d1117" stroke="#30363d"/>
+    <rect x="0" y="90" width="40" height="40" fill="#0d1117" stroke="#30363d"/>
+    <rect x="45" y="90" width="40" height="40" fill="#0d1117" stroke="#30363d"/>
+    <rect x="90" y="90" width="40" height="40" fill="#0d1117" stroke="#30363d"/>
+    <rect x="135" y="90" width="40" height="40" fill="#0d1117" stroke="#30363d"/>
+    <rect x="0" y="135" width="40" height="40" fill="#0d1117" stroke="#30363d"/>
+    <rect x="45" y="135" width="40" height="40" fill="#0d1117" stroke="#30363d"/>
+    <rect x="90" y="135" width="40" height="40" fill="#0d1117" stroke="#30363d"/>
+    <rect x="135" y="135" width="40" height="40" fill="#0d1117" stroke="#30363d"/>
+    <!-- Red Cross -->
+    <line x1="0" y1="0" x2="175" y2="175" class="cross"/>
+    <line x1="175" y1="0" x2="0" y2="175" class="cross"/>
   </g>
-  <text x="560" y="265" class="box-text" style="fill: #8b949e; font-size: 11px;">HBM ↔ SRAM Tiled Transfers (IO Complexity O(T))</text>
+  <text x="230" y="380" class="sub-text" style="fill:#f85149; font-weight:bold;">O(N²) Intermediate Score Matrix</text>
+  <text x="230" y="405" class="sub-text">Materializing QK^T in Slow HBM (VRAM) = Bottleneck</text>
 
-  <!-- HBM Box (Slow) -->
-  <rect x="50" y="290" width="800" height="150" rx="10" fill="url(#grad-sram)" stroke="#388bfd" stroke-width="2"/>
-  <text x="70" y="320" class="box-title" style="fill: #58a6ff;">💾 GPU High Bandwidth Memory (HBM / VRAM)</text>
-  <text x="90" y="350" class="box-text">• <tspan class="highlight" style="fill: #58a6ff;">Capacity:</tspan> 12 GB - 80 GB (Holds Parameters, Activations, Optimizer States)</text>
-  <text x="90" y="375" class="box-text">• <tspan class="highlight" style="fill: #58a6ff;">Bandwidth:</tspan> ~1,500 - 3,000 GB/sec (Memory-bound bottleneck for standard attention)</text>
-  <text x="90" y="415" class="box-text" style="fill: #f85149;">
-    Standard Attention Bottleneck: Writes massive T x T intermediate score &amp; softmax probability matrices to HBM (O(T²)).
-  </text>
+  <!-- Divider -->
+  <line x1="450" y1="80" x2="450" y2="430" stroke="#30363d" stroke-width="2" stroke-dasharray="4,4"/>
+
+  <!-- Right Side: FlashAttention (Tiling) -->
+  <rect x="480" y="80" width="380" height="350" rx="10" fill="#161b22" stroke="#3fb950" stroke-width="2"/>
+  <text x="670" y="110" class="box-title" style="fill:#3fb950;">FlashAttention (Tiled Execution)</text>
+
+  <!-- Blocks -->
+  <g transform="translate(540, 160)">
+    <!-- SRAM Box -->
+    <rect x="0" y="-10" width="260" height="150" rx="8" fill="url(#grad-sram)" stroke="#3fb950"/>
+    <text x="130" y="15" class="box-title">SRAM (Fast Cache)</text>
+
+    <!-- Q, K, V Blocks -->
+    <rect x="20" y="40" width="60" height="30" fill="#1f6feb" rx="4"/>
+    <text x="50" y="60" class="box-text">Q_block</text>
+
+    <rect x="100" y="40" width="60" height="30" fill="#d97706" rx="4"/>
+    <text x="130" y="60" class="box-text">K_block</text>
+
+    <rect x="180" y="40" width="60" height="30" fill="#8957e5" rx="4"/>
+    <text x="210" y="60" class="box-text">V_block</text>
+
+    <!-- Computing -->
+    <rect x="70" y="90" width="120" height="30" fill="#21262d" rx="4" stroke="#3fb950" stroke-width="1.5"/>
+    <text x="130" y="110" class="box-text">Compute Softmax</text>
+  </g>
+
+  <line x1="670" y1="310" x2="670" y2="340" class="arrow"/>
+  
+  <rect x="620" y="340" width="100" height="30" fill="#2ea043" rx="4"/>
+  <text x="670" y="360" class="box-text">Output O_block</text>
+
+  <text x="670" y="405" class="sub-text" style="fill:#7ee787; font-weight:bold;">Load small blocks into fast SRAM</text>
+  <text x="670" y="420" class="sub-text" style="fill:#7ee787;">Compute block-by-block, write O(N) output directly</text>
 
 </svg>

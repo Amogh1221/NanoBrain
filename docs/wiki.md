@@ -2,11 +2,11 @@
 
 Welcome to the official **NanoBrain** repository documentation and masterclass wiki. This repository contains a clean, high-performance, modular implementation of a 124-Million parameter Generative Pre-trained Transformer (GPT-2 Small architecture) built in PyTorch.
 
-> **Rendering Note:** This document contains mathematical formulas formatted in LaTeX ($...$ and $$...$$). For optimal rendering, view this file on GitHub or in a Markdown previewer with MathJax / KaTeX support enabled.
-
 This document serves as an exhaustive, first-principles textbook and technical guide. It is structured into two main parts:
 1. **Theoretical Foundations & Alignment (Modules 1–6):** Mathematical, architectural, hardware, algorithmic, and fine-tuning mechanics powering modern Large Language Models.
 2. **Implementation Deep Dive (Module 7):** A file-by-file walkthrough of the NanoBrain codebase.
+
+> **Rendering Note:** This document contains mathematical formulas formatted in LaTeX ($...$ and $$...$$). For optimal rendering, view this file on GitHub or in a Markdown previewer with MathJax / KaTeX support enabled.
 
 ---
 
@@ -76,6 +76,10 @@ At its core, formal language modeling frames natural language generation as a jo
 
 $$P(X) = P(x_1, x_2, \dots, x_N) = \prod_{t=1}^N P(x_t \mid x_1, x_2, \dots, x_{t-1})$$
 
+```text
+Fallback: P(X) = P(x1) * P(x2|x1) * P(x3|x1,x2) * ... * P(xN|x1,...,xN-1)
+```
+
 In a causal (or auto-regressive) language model, the network parameterizes the conditional probability distribution $P(x_t = k \mid x_{<t})$ over a finite vocabulary set $V$:
 
 $$P(x_t = k \mid x_{<t}; \theta) = \text{softmax}(z_t)_k = \frac{\exp(z_{t, k})}{\sum_{j=1}^{|V|} \exp(z_{t, j})}$$
@@ -85,6 +89,10 @@ where $\theta$ represents the trainable weights of the neural network and $z_t \
 Training an LLM consists of minimizing the empirical cross-entropy loss over a corpus of $T$ tokens:
 
 $$\mathcal{L}_{CE}(\theta) = -\frac{1}{T} \sum_{t=1}^T \log P(x_t^{\text{target}} \mid x_1, \dots, x_{t-1}; \theta)$$
+
+```text
+Fallback: Loss = -(1/T) * sum[ log P(target_word_t | all_previous_words) ]
+```
 
 where $x_t^{\text{target}}$ is the target ground-truth token index at position $t$.
 
@@ -125,6 +133,15 @@ Step 5: P("jumps" | "The", "quick", "brown", "fox")
    - **Output Gate ($o_t$):** Filters what cell memory to expose as hidden output $h_t$:
      $$o_t = \sigma(W_o \cdot [h_{t-1}, x_t] + b_o), \quad h_t = o_t \odot \text{tanh}(C_t)$$
 
+```text
+Fallback:
+Forget(f) = sigmoid(Wf * [h, x] + bf)
+Input(i) = sigmoid(Wi * [h, x] + bi)
+Cell(C) = f * C_prev + i * tanh(Wc * [h, x] + bc)
+Output(o) = sigmoid(Wo * [h, x] + bo)
+h_new = o * tanh(C)
+```
+
 ---
 
 ### 1.3 The Bottlenecks of Sequential Models
@@ -136,6 +153,12 @@ Step 5: P("jumps" | "The", "quick", "brown", "fox")
   <br>
   <em>Sequential RNN Bottleneck vs. Parallel Transformer Self-Attention Vector Diagram.</em>
 </p>
+
+```text
+RNN Bottleneck:
+h1 -> h2 -> h3 -> h4 -> h5  (each arrow = one serial compute step)
+GPU: [■□□□□□□□] 1/8 cores active (rest idle)
+```
 
 Despite the architectural improvements of LSTMs and GRUs, three fundamental bottlenecks hindered scaling:
 
@@ -227,6 +250,10 @@ $$R_{\theta_i, m} = \begin{pmatrix} \cos(m\theta_i) & -\sin(m\theta_i) \\ \sin(m
   <em>Causal Multi-Head Self-Attention Architecture Vector Diagram.</em>
 </p>
 
+Before the attention calculation, Multi-Head Attention reshapes these matrices to split the computation across `h` parallel heads:
+`Q, K, V ∈ R^[B×T×d_embd] → reshape → R^[B×h×T×d_k]`
+*(For NanoBrain: `h=12`, `d_embd=768`, `d_k=64`)*
+
 Given an input tensor $X \in \mathbb{R}^{B \times T \times d_{embd}}$, three distinct linear projections generate Queries ($Q$), Keys ($K$), and Values ($V$):
 
 $$Q = X W_Q, \quad K = X W_K, \quad V = X W_V$$
@@ -238,6 +265,21 @@ $$\text{qkv} = \text{Linear}_{d_{embd} \to 3d_{embd}}(X) \implies Q, K, V \in \m
 #### The Scaled Dot-Product Attention Equation
 
 $$\text{Attention}(Q, K, V) = \text{softmax}\left( \frac{Q K^T}{\sqrt{d_k}} + M \right) V$$
+
+```text
+Fallback: Attention(Q, K, V) = softmax( (Q * K^T) / sqrt(d_k) + M ) * V
+```
+
+#### Causal Masking (M)
+To prevent the model from "looking ahead" at future tokens, a causal mask $M$ is applied. $M$ is a lower-triangular matrix filled with $-\infty$ above the diagonal, which forces the softmax to assign exactly 0 probability to future tokens.
+
+```text
+4x4 Causal Mask Matrix M:
+[[ 0, -inf, -inf, -inf],
+ [ 0,    0, -inf, -inf],
+ [ 0,    0,    0, -inf],
+ [ 0,    0,    0,    0]]
+```
 
 #### Why Scale by $\sqrt{d_k}$?
 Assuming components of $Q$ and $K$ are independent random variables with mean 0 and variance 1, their dot product $q \cdot k = \sum_{i=1}^{d_k} q_i k_i$ has a mean of 0 and variance of $d_k$. Dividing by $\sqrt{d_k}$ scales variance back to 1.0, preventing softmax saturation gradients:
@@ -353,6 +395,13 @@ $$W_{lm\_head} = W_{te}^T$$
 | **BF16** | 16 | 8 | 7 | $10^{-38} \dots 10^{38}$ | Same as FP32 (Robust) |
 | **TF32** | 19 (internal) | 8 | 10 | Same as FP32 | Medium |
 
+```text
+Bit Layout Comparison:
+FP32: [S(1)] [Exponent(8)]  [Mantissa(23)]
+FP16: [S(1)] [Exponent(5)]  [Mantissa(10)]  <-- Tiny exponent causes underflow
+BF16: [S(1)] [Exponent(8)]  [Mantissa(7)]   <-- Exact same range as FP32!
+```
+
 ---
 
 ### 3.4 Mixed-Precision Training (AMP) and Gradient Scaling
@@ -361,11 +410,23 @@ $$W_{lm\_head} = W_{te}^T$$
 
 NanoBrain leverages Automatic Mixed Precision (AMP) via `torch.amp.autocast("cuda", dtype=torch.bfloat16)`. `GradScaler` multiplies loss by scale $S$ during FP16 training to prevent gradient underflow. Under BF16, `GradScaler` acts as a harmless no-op.
 
+```text
+Mixed Precision Flow:
+Forward (BF16) -> Loss -> Scaled Backprop -> Unscale -> FP32 Optimizer Step
+```
+
 ---
 
 ### 3.5 Gradient Accumulation and Gradient Clipping
 
 - **Gradient Accumulation:** Accumulates gradients across $K=8$ micro-steps ($B_{micro}=8 \implies B_{eff}=64$), simulating large batch training without VRAM OOM.
+  $$\bar{g} = \frac{1}{K} \sum_{k=1}^K \nabla_{\theta} \mathcal{L}(\theta; X_k)$$
+  ```text
+  For step 1 to K:
+    loss = forward(micro_batch) / K
+    loss.backward()  # Gradients add up
+  optimizer.step()   # Single update after K steps
+  ```
 - **Gradient Clipping:** Clips gradient norm $\|g\|_2 > 1.0$ to prevent loss spikes.
 
 ---
@@ -380,6 +441,11 @@ NanoBrain leverages Automatic Mixed Precision (AMP) via `torch.amp.autocast("cud
 
 NanoBrain uses Fused AdamW with decoupled weight decay ($\lambda = 0.1$) excluding 1D LayerNorm/bias parameters, paired with a 2,000-step linear warmup decaying down to $\eta_{min} = 6 \times 10^{-5}$ over 100,000 steps.
 
+**Why decoupled weight decay (AdamW)?**
+Standard L2 regularization $\mathcal{L} + \lambda ||\theta||^2$ weakens when interacting with Adam's adaptive variance scaling (weights with large gradients are barely decayed). AdamW decouples it by directly subtracting $\eta \lambda \theta_t$ during the parameter update:
+
+$$\theta_{t} = \theta_{t-1} - \eta_t \left( \alpha \frac{\hat{m}_t}{\sqrt{\hat{v}_t} + \epsilon} + \lambda \theta_{t-1} \right)$$
+
 ---
 
 ### 3.7 Exponential Moving Average (EMA) of Weights
@@ -389,6 +455,15 @@ NanoBrain maintains a running shadow copy of parameters $\theta_{EMA}$:
 $$\theta_{EMA}^{(t)} = \beta_{ema} \theta_{EMA}^{(t-1)} + (1 - \beta_{ema}) \theta_t \quad (\beta_{ema} = 0.999)$$
 
 Applied during validation evaluation to smooth loss curves and boost out-of-domain generalization.
+
+*Note on Bias Correction:* Early in training, EMA is heavily biased towards the initial $\theta_0$. Bias correction $\theta_{EMA\_corrected} = \theta_{EMA} / (1 - \beta^t)$ is sometimes applied. However, NanoBrain's `model.py` EMA implementation skips bias correction for simplicity, relying on sufficient training steps to wash out the initial state:
+
+```python
+# Inside EMA.update()
+for name, param in model.named_parameters():
+    if param.requires_grad:
+        self.shadow[name].data.mul_(self.decay).add_(param.data, alpha=1.0 - self.decay)
+```
 
 ---
 
@@ -442,9 +517,15 @@ During autoregressive generation, computing attention for a new token at step $t
 **KV Cache Formula:**
 $$\text{Memory}_{KV} = 2 \times b \times n_{layers} \times n_{heads} \times d_k \times T \times \text{bytes\_per\_elem}$$
 
+```text
+Fallback: Memory = 2 * batch * layers * heads * d_k * seq_len * bytes
+```
+
 For NanoBrain (12 layers, 12 heads, $d_k=64$, FP16 precision):
 - At $T=1,024$, batch size $B=1$: $\sim 24 \text{ MB}$.
 - At $T=4,096$, batch size $B=16$: $\sim 6.03 \text{ GB}$ VRAM overhead!
+
+For a model with $n_{kv\_heads}=2$ (GQA) instead of $n_{heads}=12$, cache memory shrinks by $6\times$. This is exactly the tradeoff Section 5.2 explores.
 
 ---
 
@@ -460,6 +541,9 @@ For NanoBrain (12 layers, 12 heads, $d_k=64$, FP16 precision):
 | **Normalization Layer** | LayerNorm (Mean + Variance) | RMSNorm (Root Mean Square) | 10–50% faster computation by dropping mean calculation |
 | **Activation Function** | GELU (`approximate="tanh"`) | SwiGLU Gated Activation | Higher parameter expressivity per FLOP |
 | **Attention Mechanism** | Multi-Head Attention (MHA) | Grouped-Query Attention (GQA) | Reduces KV Cache VRAM footprint during multi-user inference |
+| **Normalization Position** | Pre-LN | Pre-LN with RMSNorm | More stable gradients, slightly faster |
+| **Attention Kernel** | FlashAttention-1/SDPA | FlashAttention-2/3 | Significantly higher TFLOPS utilization |
+| **Bias Vectors** | Optional biases in Linear | No biases (`bias=False`) | Saves memory and compute, negligible quality drop |
 
 ---
 
@@ -489,6 +573,8 @@ GQA partitions 12 Query heads into groups that share 2 or 4 Key/Value heads, sla
 
 ### 6.1 Supervised Fine-Tuning (SFT)
 
+> **Intuition:** A pretrained model is like a brilliant person who has read the entire internet but never had a conversation. SFT gives it thousands of example conversations to teach it that questions deserve answers, not more text completions.
+
 Supervised Fine-Tuning adapts a base pretrained model to instruction-following task structures by training on curated `(Prompt, Response)` datasets (e.g., UltraFeedback, ShareGPT):
 
 $$\mathcal{L}_{SFT}(\theta) = -\sum_{i=1}^{|Y|} \log P(y_i \mid x, y_{<i}; \theta)$$
@@ -499,6 +585,8 @@ Loss is calculated exclusively over target response tokens $y$, ignoring prompt 
 
 ### 6.2 Reinforcement Learning from Human Feedback (RLHF) & PPO
 
+> **Intuition:** Even after SFT, the model may give technically correct but unhelpful or unsafe answers. RLHF trains a 'judge' model (the Reward Model) on human preferences, then uses reinforcement learning to nudge the main model toward outputs the judge scores highly.
+
 1. **Reward Model (RM):** Trained on human pairwise comparisons $(x, y_w, y_l)$ where $y_w$ is preferred over $y_l$:
    $$\mathcal{L}_{RM}(\phi) = -\mathbb{E}_{(x, y_w, y_l)} \left[ \log \sigma \left( r_\phi(x, y_w) - r_\phi(x, y_l) \right) \right]$$
 2. **PPO Policy Optimization:** Optimizes policy model $\pi_\theta$ to maximize reward $r_\phi$ while adding a KL-divergence penalty against original base model $\pi_{ref}$:
@@ -508,9 +596,15 @@ Loss is calculated exclusively over target response tokens $y$, ignoring prompt 
 
 ### 6.3 Direct Preference Optimization (DPO)
 
+> **Intuition:** RLHF requires training two models and running complex RL loops. DPO discovered that you can skip all of that — the preference signal can be directly baked into the model's own probability ratios using a simple classification loss.
+
 **Direct Preference Optimization** (*Rafailov et al., 2023*) eliminates the need for training a separate Reward Model or running complex PPO reinforcement learning loops. DPO reparameterizes the reward function directly in terms of policy probabilities:
 
 $$\mathcal{L}_{DPO}(\theta) = -\mathbb{E}_{(x, y_w, y_l)} \left[ \log \sigma \left( \beta \log \frac{\pi_\theta(y_w \mid x)}{\pi_{ref}(y_w \mid x)} - \beta \log \frac{\pi_\theta(y_l \mid x)}{\pi_{ref}(y_l \mid x)} \right) \right]$$
+
+```text
+Fallback: Loss = -E[ log( sigmoid( beta * log(P_win/Ref_win) - beta * log(P_lose/Ref_lose) ) ) ]
+```
 
 DPO achieves state-of-the-art alignment quality with simple, stable cross-entropy classification loss.
 
@@ -575,11 +669,36 @@ class GPTConfig:
 #### Exact Parameter Sum: 124,339,200 Parameters
 $$\text{Wte }(38.6\text{M}) + \text{Wpe }(786\text{K}) + 12 \times \text{Blocks }(85.0\text{M}) + \text{LN}_f (1.5\text{K}) = \mathbf{124,339,200}$$
 
+```text
+Per-Block Arithmetic Breakdown:
+- c_attn (QKV):  768 x 2304 = 1,769,472
+- c_proj:        768 x 768  = 589,824
+- c_fc (MLP):    768 x 3072 = 2,359,296
+- c_proj (MLP):  3072 x 768 = 2,359,296
+- LayerNorm (2): 2 x 768    = 1,536
+-----------------------------------------
+Total per block:              7,079,424
+```
+
 ---
 
 ### 7.2 Data Sourcing and Pre-Processing ([`build_dataset.py`](../build_dataset.py))
 
 Streams 5 high-quality datasets (FineWeb-Edu, Wikipedia, CodeParrot, Gutenberg, FineMath), applies NFKC normalization, and compiles clean `data/corpus.txt`.
+
+```python
+DATA_MIX = {
+    "fineweb-edu": {"weight": 0.40},
+    "wikipedia": {"weight": 0.25},
+    "codeparrot": {"weight": 0.15},
+    "gutenberg": {"weight": 0.10},
+    "finemath": {"weight": 0.10}
+}
+# Text cleaning pipeline
+text = unicodedata.normalize("NFKC", text)
+text = ''.join(c for c in text if unicodedata.category(c)[0] != 'C')
+if len(text) < 300: return None
+```
 
 ---
 
@@ -587,11 +706,46 @@ Streams 5 high-quality datasets (FineWeb-Edu, Wikipedia, CodeParrot, Gutenberg, 
 
 `tokenize_dataset.py` pre-tokenizes text into 16-bit binary files (`train.bin` / `val.bin`). `dataset.py` uses `np.memmap` for zero-copy data loading directly from disk.
 
+*Why `np.memmap`?* Zero-copy loading prevents RAM exhaustion. The data remains on disk and is paged into memory by the OS only when requested by a batch.
+
+```python
+class BinDataset(Dataset):
+    def __init__(self, bin_path, block_size):
+        self.data = np.memmap(bin_path, dtype=np.uint16, mode='r')
+        self.block_size = block_size
+        
+    def __getitem__(self, idx):
+        # Slice directly from disk
+        x = torch.from_numpy(self.data[idx : idx + self.block_size].astype(np.int64))
+        y = torch.from_numpy(self.data[idx + 1 : idx + 1 + self.block_size].astype(np.int64))
+        return x, y
+```
+
 ---
 
 ### 7.4 PyTorch Model Implementation ([`model.py`](../model.py))
 
 Houses core PyTorch neural network modules: `LayerNorm`, `CausalSelfAttention`, `MLP`, `Block`, `GPT`, and `EMA`.
+
+```python
+class CausalSelfAttention(nn.Module):
+    def forward(self, x):
+        B, T, C = x.size()
+        qkv = self.c_attn(x)
+        q, k, v = qkv.split(self.n_embd, dim=2)
+        
+        # Reshape to multi-head: [B, T, C] -> [B, h, T, d_k]
+        k = k.view(B, T, self.n_head, C // self.n_head).transpose(1, 2)
+        q = q.view(B, T, self.n_head, C // self.n_head).transpose(1, 2)
+        v = v.view(B, T, self.n_head, C // self.n_head).transpose(1, 2)
+        
+        # FlashAttention (SDPA)
+        y = F.scaled_dot_product_attention(q, k, v, is_causal=True)
+        y = y.transpose(1, 2).contiguous().view(B, T, C)
+        return self.c_proj(y)
+```
+
+Weight initialization follows the GPT-2 scaling rule, where residual projection weights are scaled down by $1/\sqrt{2N}$ (where $N$ is `n_layer`) to prevent variance explosion early in training.
 
 ---
 
