@@ -5,7 +5,7 @@
 **A clean GPT-2-class language model trained from scratch in PyTorch.**  
 Designed to run on a single consumer GPU (12 GB VRAM) for 2–4 weeks and produce a genuinely capable 124M-parameter model.
 
-[**📖 Read the Masterclass Technical Wiki (wiki.md)**](wiki.md)  
+[**📖 Read the Masterclass Technical Wiki**](https://github.com/Amogh1221/NanoBrain/wiki)  
 *An exhaustive, first-principles textbook covering LLM theory, Transformer math, FlashAttention, CUDA memory hierarchy, and codebase implementation.*
 
 </div>
