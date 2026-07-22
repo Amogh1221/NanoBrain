@@ -1,0 +1,75 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 500" width="100%" height="100%" style="background-color: #0d1117; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
+  <style>
+    .title { font-size: 20px; font-weight: bold; fill: #58a6ff; text-anchor: middle; }
+    .box-text { font-size: 13px; font-weight: 600; fill: #ffffff; text-anchor: middle; }
+    .sub-text { font-size: 11px; fill: #8b949e; text-anchor: middle; }
+    .arrow { stroke: #58a6ff; stroke-width: 2; marker-end: url(#arrowhead); }
+  </style>
+
+  <defs>
+    <marker id="arrowhead" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+      <polygon points="0 0, 8 3, 0 6" fill="#58a6ff" />
+    </marker>
+    <linearGradient id="grad-blue" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1f6feb" />
+      <stop offset="100%" stop-color="#1158c7" />
+    </linearGradient>
+    <linearGradient id="grad-purple" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#8957e5" />
+      <stop offset="100%" stop-color="#6e40c9" />
+    </linearGradient>
+    <linearGradient id="grad-orange" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#d97706" />
+      <stop offset="100%" stop-color="#b45309" />
+    </linearGradient>
+    <linearGradient id="grad-green" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#238636" />
+      <stop offset="100%" stop-color="#1e7e34" />
+    </linearGradient>
+  </defs>
+
+  <text x="450" y="40" class="title">Causal Multi-Head Self-Attention (MHSA) Architecture</text>
+
+  <!-- Input X -->
+  <rect x="60" y="80" width="160" height="60" rx="8" fill="#21262d" stroke="#30363d" stroke-width="2"/>
+  <text x="140" y="105" class="box-text">Input Sequence X</text>
+  <text x="140" y="125" class="sub-text">[Batch B, Length T, d_embd]</text>
+
+  <!-- Linear c_attn -->
+  <rect x="290" y="80" width="200" height="60" rx="8" fill="url(#grad-blue)" stroke="#388bfd" stroke-width="1.5"/>
+  <text x="390" y="105" class="box-text">Linear Projection (c_attn)</text>
+  <text x="390" y="125" class="sub-text">X W_qkv → [B, T, 3 * d_embd]</text>
+
+  <!-- Split Heads -->
+  <rect x="560" y="80" width="280" height="60" rx="8" fill="url(#grad-purple)" stroke="#ab7df8" stroke-width="1.5"/>
+  <text x="700" y="105" class="box-text">Split 12 Heads (Q, K, V)</text>
+  <text x="700" y="125" class="sub-text">Reshape → [B, h=12, T, d_k=64]</text>
+
+  <!-- Arrows Top -->
+  <line x1="220" y1="110" x2="280" y2="110" class="arrow"/>
+  <line x1="490" y1="110" x2="550" y2="110" class="arrow"/>
+
+  <!-- Scaled Dot-Product Attention Box -->
+  <rect x="220" y="210" width="460" height="130" rx="12" fill="url(#grad-orange)" stroke="#f59e0b" stroke-width="2"/>
+  <text x="450" y="240" class="box-text" style="font-size: 16px;">Scaled Dot-Product Attention</text>
+  <text x="450" y="275" class="box-text" style="font-family: monospace; font-size: 14px; fill: #fef3c7;">
+    Attention(Q, K, V) = softmax( (Q K^T / √d_k) + CausalMask ) V
+  </text>
+  <text x="450" y="315" class="sub-text" style="fill: #fde68a;">
+    Causal Mask: Upper-triangle set to -∞ (prevents future token lookahead)
+  </text>
+
+  <!-- Arrow Down to Attention -->
+  <line x1="700" y1="140" x2="700" y2="180" stroke="#8957e5" stroke-width="2"/>
+  <line x1="700" y1="180" x2="450" y2="180" stroke="#8957e5" stroke-width="2"/>
+  <line x1="450" y1="180" x2="450" y2="200" class="arrow"/>
+
+  <!-- Output Projection c_proj -->
+  <rect x="270" y="390" width="360" height="60" rx="8" fill="url(#grad-green)" stroke="#3fb950" stroke-width="1.5"/>
+  <text x="450" y="415" class="box-text">Output Projection (c_proj) + Dropout</text>
+  <text x="450" y="435" class="sub-text">Concat Heads → Linear → Add Residual Stream (x + SubLayer)</text>
+
+  <!-- Arrow Down to Output -->
+  <line x1="450" y1="340" x2="450" y2="380" class="arrow"/>
+
+</svg>

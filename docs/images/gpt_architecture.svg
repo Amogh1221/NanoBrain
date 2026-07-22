@@ -1,0 +1,84 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 720" width="100%" height="100%" style="background-color: #0d1117; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
+  <style>
+    .title { font-size: 18px; font-weight: bold; fill: #58a6ff; text-anchor: middle; }
+    .box-title { font-size: 13px; font-weight: bold; fill: #ffffff; text-anchor: middle; }
+    .sub-text { font-size: 11px; fill: #8b949e; text-anchor: middle; }
+    .arrow { stroke: #58a6ff; stroke-width: 2; marker-end: url(#arrowhead); }
+    .resid-arrow { stroke: #bc8cff; stroke-width: 2; fill: none; stroke-dasharray: 4,3; }
+  </style>
+
+  <defs>
+    <marker id="arrowhead" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+      <polygon points="0 0, 8 3, 0 6" fill="#58a6ff" />
+    </marker>
+    <linearGradient id="grad-block" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#161b22" />
+      <stop offset="100%" stop-color="#0d1117" />
+    </linearGradient>
+  </defs>
+
+  <rect width="100%" height="100%" fill="#0d1117"/>
+
+  <text x="250" y="35" class="title">Full GPT Decoder Architecture (NanoBrain)</text>
+
+  <!-- Output Logits -->
+  <rect x="130" y="60" width="240" height="40" rx="8" fill="#1f6feb" stroke="#388bfd" stroke-width="1.5"/>
+  <text x="250" y="85" class="box-title">Output Probability Logits P(x)</text>
+
+  <line x1="250" y1="125" x2="250" y2="100" class="arrow"/>
+
+  <!-- Final LayerNorm ln_f -->
+  <rect x="150" y="125" width="200" height="35" rx="6" fill="#8957e5" stroke="#ab7df8" stroke-width="1.5"/>
+  <text x="250" y="147" class="box-title" style="font-size:12px;">Final LayerNorm (ln_f)</text>
+
+  <line x1="250" y1="185" x2="250" y2="160" class="arrow"/>
+
+  <!-- Transformer Block Outer Box -->
+  <rect x="70" y="185" width="360" height="360" rx="12" fill="url(#grad-block)" stroke="#30363d" stroke-width="2"/>
+  <text x="390" y="210" class="sub-text" style="fill:#58a6ff; font-weight:bold;">x N Blocks (N=12)</text>
+
+  <!-- MLP Block -->
+  <rect x="110" y="225" width="280" height="50" rx="8" fill="#238636" stroke="#3fb950" stroke-width="1.5"/>
+  <text x="250" y="247" class="box-title">MLP / Feed-Forward Expansion</text>
+  <text x="250" y="263" class="sub-text" style="fill:#e6ffec;">c_fc (4*d_embd) → GELU → c_proj</text>
+
+  <line x1="250" y1="305" x2="250" y2="275" class="arrow"/>
+
+  <!-- Pre-LN 2 -->
+  <rect x="170" y="305" width="160" height="30" rx="6" fill="#8957e5" stroke="#ab7df8" stroke-width="1.5"/>
+  <text x="250" y="325" class="box-title" style="font-size:11px;">Pre-LayerNorm (ln_2)</text>
+
+  <line x1="250" y1="365" x2="250" y2="335" class="arrow"/>
+
+  <!-- Causal Self-Attention Block -->
+  <rect x="110" y="365" width="280" height="55" rx="8" fill="#d97706" stroke="#f59e0b" stroke-width="1.5"/>
+  <text x="250" y="388" class="box-title">Causal Multi-Head Self-Attention</text>
+  <text x="250" y="407" class="sub-text" style="fill:#fef3c7;">12 Heads (d_k=64) + FlashAttention</text>
+
+  <line x1="250" y1="450" x2="250" y2="420" class="arrow"/>
+
+  <!-- Pre-LN 1 -->
+  <rect x="170" y="450" width="160" height="30" rx="6" fill="#8957e5" stroke="#ab7df8" stroke-width="1.5"/>
+  <text x="250" y="470" class="box-title" style="font-size:11px;">Pre-LayerNorm (ln_1)</text>
+
+  <!-- Residual Bypass Paths -->
+  <path d="M 250 500 L 90 500 L 90 350 L 250 350" class="resid-arrow"/>
+  <text x="80" y="430" class="sub-text" style="fill:#bc8cff; font-size:10px;">Residual (+)</text>
+
+  <path d="M 250 350 L 90 350 L 90 205 L 250 205" class="resid-arrow"/>
+  <text x="80" y="280" class="sub-text" style="fill:#bc8cff; font-size:10px;">Residual (+)</text>
+
+  <line x1="250" y1="585" x2="250" y2="545" class="arrow"/>
+
+  <!-- Embeddings Sum -->
+  <rect x="110" y="585" width="280" height="45" rx="8" fill="#1f6feb" stroke="#388bfd" stroke-width="1.5"/>
+  <text x="250" y="605" class="box-title">Token Embeddings (Wte) + Positional (Wpe)</text>
+  <text x="250" y="621" class="sub-text">H_0 = E_tok + E_pos ∈ ℝ^[B, T, 768]</text>
+
+  <line x1="250" y1="670" x2="250" y2="630" class="arrow"/>
+
+  <!-- Input Token Indices -->
+  <rect x="130" y="670" width="240" height="35" rx="6" fill="#21262d" stroke="#30363d" stroke-width="1.5"/>
+  <text x="250" y="692" class="box-title" style="fill:#c9d1d9;">Input Token Indices [x_1, ..., x_T]</text>
+
+</svg>

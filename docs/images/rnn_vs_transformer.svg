@@ -1,0 +1,59 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 420" width="100%" height="100%" style="background-color: #0d1117; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
+  <style>
+    .title { font-size: 18px; font-weight: bold; fill: #58a6ff; text-anchor: middle; }
+    .box-title { font-size: 14px; font-weight: bold; fill: #ffffff; text-anchor: middle; }
+    .sub-text { font-size: 11px; fill: #8b949e; text-anchor: middle; }
+  </style>
+
+  <text x="450" y="35" class="title">Sequential RNN Bottleneck vs. Parallel Transformer Self-Attention</text>
+
+  <!-- Left: RNN -->
+  <rect x="40" y="65" width="390" height="330" rx="10" fill="#161b22" stroke="#f85149" stroke-width="1.5"/>
+  <text x="235" y="95" class="box-title" style="fill: #f85149;">❌ Recurrent Neural Network (RNN / LSTM)</text>
+  <text x="235" y="115" class="sub-text">Sequential Step-by-Step Processing: O(T) compute chain</text>
+
+  <g transform="translate(60, 160)">
+    <rect x="0" y="0" width="60" height="50" rx="6" fill="#21262d" stroke="#30363d"/><text x="30" y="30" class="box-text" style="font-size:12px;fill:#fff;text-anchor:middle">x_1</text>
+    <text x="30" y="70" class="sub-text">"The"</text>
+    <line x1="60" y1="25" x2="90" y2="25" stroke="#f85149" stroke-width="2"/>
+
+    <rect x="95" y="0" width="60" height="50" rx="6" fill="#21262d" stroke="#30363d"/><text x="125" y="30" class="box-text" style="font-size:12px;fill:#fff;text-anchor:middle">h_1</text>
+    <line x1="155" y1="25" x2="185" y2="25" stroke="#f85149" stroke-width="2"/>
+
+    <rect x="190" y="0" width="60" height="50" rx="6" fill="#21262d" stroke="#30363d"/><text x="220" y="30" class="box-text" style="font-size:12px;fill:#fff;text-anchor:middle">h_2</text>
+    <line x1="250" y1="25" x2="280" y2="25" stroke="#f85149" stroke-width="2"/>
+
+    <rect x="285" y="0" width="60" height="50" rx="6" fill="#21262d" stroke="#30363d"/><text x="315" y="30" class="box-text" style="font-size:12px;fill:#fff;text-anchor:middle">h_3</text>
+  </g>
+  <text x="235" y="300" class="sub-text" style="fill: #f85149; font-weight: 600;">
+    • Step t depends strictly on step t-1 (Cannot parallelize on GPU)
+  </text>
+  <text x="235" y="325" class="sub-text" style="fill: #f85149;">
+    • Gradient vanishing/exploding &amp; memory loss over long distance
+  </text>
+
+  <!-- Right: Transformer -->
+  <rect x="470" y="65" width="390" height="330" rx="10" fill="#161b22" stroke="#3fb950" stroke-width="1.5"/>
+  <text x="665" y="95" class="box-title" style="fill: #3fb950;">⚡ Transformer Decoder (Self-Attention)</text>
+  <text x="665" y="115" class="sub-text">Parallel All-to-All Direct Interactions: O(1) path length</text>
+
+  <g transform="translate(490, 160)">
+    <rect x="10" y="0" width="70" height="40" rx="6" fill="#238636"/><text x="45" y="25" class="box-text" style="font-size:12px;fill:#fff;text-anchor:middle">Token 1</text>
+    <rect x="100" y="0" width="70" height="40" rx="6" fill="#238636"/><text x="135" y="25" class="box-text" style="font-size:12px;fill:#fff;text-anchor:middle">Token 2</text>
+    <rect x="190" y="0" width="70" height="40" rx="6" fill="#238636"/><text x="225" y="25" class="box-text" style="font-size:12px;fill:#fff;text-anchor:middle">Token 3</text>
+    <rect x="280" y="0" width="70" height="40" rx="6" fill="#238636"/><text x="315" y="25" class="box-text" style="font-size:12px;fill:#fff;text-anchor:middle">Token 4</text>
+
+    <!-- Matrix connections -->
+    <path d="M 45 40 Q 135 90 225 40" fill="none" stroke="#58a6ff" stroke-width="2"/>
+    <path d="M 45 40 Q 180 120 315 40" fill="none" stroke="#58a6ff" stroke-width="2"/>
+    <path d="M 135 40 Q 225 70 315 40" fill="none" stroke="#58a6ff" stroke-width="2"/>
+  </g>
+
+  <text x="665" y="300" class="sub-text" style="fill: #7ee787; font-weight: 600;">
+    • All tokens processed simultaneously across GPU tensor cores
+  </text>
+  <text x="665" y="325" class="sub-text" style="fill: #7ee787;">
+    • Direct token-to-token contextual links regardless of distance
+  </text>
+
+</svg>

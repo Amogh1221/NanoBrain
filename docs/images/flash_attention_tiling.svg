@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 480" width="100%" height="100%" style="background-color: #0d1117; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
+  <style>
+    .title { font-size: 20px; font-weight: bold; fill: #58a6ff; text-anchor: middle; }
+    .box-title { font-size: 15px; font-weight: bold; fill: #58a6ff; }
+    .box-text { font-size: 13px; fill: #c9d1d9; }
+    .highlight { font-weight: bold; fill: #3fb950; }
+  </style>
+
+  <defs>
+    <linearGradient id="grad-sram" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#161b22" />
+      <stop offset="100%" stop-color="#0d1117" />
+    </linearGradient>
+  </defs>
+
+  <text x="450" y="40" class="title">GPU Memory Bandwidth &amp; FlashAttention Tiled Execution</text>
+
+  <!-- SRAM Box (Fast) -->
+  <rect x="50" y="70" width="800" height="170" rx="10" fill="url(#grad-sram)" stroke="#3fb950" stroke-width="2"/>
+  <text x="70" y="100" class="box-title" style="fill: #3fb950;">⚡ GPU On-Chip SRAM (L1 Cache / Fast Execution)</text>
+  <text x="90" y="130" class="box-text">• <tspan class="highlight">Capacity:</tspan> ~20 MB - 100 MB (Ultra-small)</text>
+  <text x="90" y="155" class="box-text">• <tspan class="highlight">Bandwidth:</tspan> ~19,000 GB/sec (Ultra-fast direct SM access)</text>
+  <text x="90" y="195" class="box-text" style="fill: #7ee787; font-weight: 600;">
+    FlashAttention Tiling Solution: Load tiles of Q_i, K_j, V_j into SRAM → Compute partial Softmax &amp; O_i → Write back final O only.
+  </text>
+
+  <!-- Connection Arrow -->
+  <g transform="translate(450, 245)">
+    <line x1="0" y1="0" x2="0" y2="35" stroke="#58a6ff" stroke-width="3" stroke-dasharray="6,4"/>
+    <polygon points="-6 35, 6 35, 0 45" fill="#58a6ff"/>
+    <polygon points="-6 0, 6 0, 0 -10" fill="#58a6ff"/>
+  </g>
+  <text x="560" y="265" class="box-text" style="fill: #8b949e; font-size: 11px;">HBM ↔ SRAM Tiled Transfers (IO Complexity O(T))</text>
+
+  <!-- HBM Box (Slow) -->
+  <rect x="50" y="290" width="800" height="150" rx="10" fill="url(#grad-sram)" stroke="#388bfd" stroke-width="2"/>
+  <text x="70" y="320" class="box-title" style="fill: #58a6ff;">💾 GPU High Bandwidth Memory (HBM / VRAM)</text>
+  <text x="90" y="350" class="box-text">• <tspan class="highlight" style="fill: #58a6ff;">Capacity:</tspan> 12 GB - 80 GB (Holds Parameters, Activations, Optimizer States)</text>
+  <text x="90" y="375" class="box-text">• <tspan class="highlight" style="fill: #58a6ff;">Bandwidth:</tspan> ~1,500 - 3,000 GB/sec (Memory-bound bottleneck for standard attention)</text>
+  <text x="90" y="415" class="box-text" style="fill: #f85149;">
+    Standard Attention Bottleneck: Writes massive T x T intermediate score &amp; softmax probability matrices to HBM (O(T²)).
+  </text>
+
+</svg>
