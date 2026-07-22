@@ -112,7 +112,7 @@ Step 5: P("jumps" | "The", "quick", "brown", "fox")
 > **Intuition:** Early AI models tried to predict the next word by looking only at the last 2 or 3 words ($N$-grams) or by passing a single running memory vector down a chain of words (RNNs). While RNNs were a big step forward, they forced computers to read words one by one, creating a huge bottleneck.
 
 <p align="center">
-  <img src="images/lstm_gates.svg" alt="LSTM Cell Gating Mechanics Vector Diagram" width="750">
+  <img src="https://raw.githubusercontent.com/Amogh1221/NanoBrain/main/docs/images/lstm_gates.svg" alt="LSTM Cell Gating Mechanics Vector Diagram" width="750">
   <br>
   <em>LSTM Cell Gating Mechanics &amp; Memory Highway Architecture.</em>
 </p>
@@ -149,7 +149,7 @@ h_new = o * tanh(C)
 > **Intuition:** Imagine trying to read an entire encyclopedia, but you are only allowed to keep a single sentence in your head to summarize everything you've read so far. That was the LSTM bottleneck. Additionally, because word 100 couldn't be processed until word 99 was finished, modern parallel graphics cards (GPUs) sat mostly idle.
 
 <p align="center">
-  <img src="images/rnn_vs_transformer.svg" alt="Sequential RNN Bottleneck vs Parallel Transformer Self-Attention" width="680">
+  <img src="https://raw.githubusercontent.com/Amogh1221/NanoBrain/main/docs/images/rnn_vs_transformer.svg" alt="Sequential RNN Bottleneck vs Parallel Transformer Self-Attention" width="680">
   <br>
   <em>Sequential RNN Bottleneck vs. Parallel Transformer Self-Attention Vector Diagram.</em>
 </p>
@@ -176,7 +176,7 @@ Despite the architectural improvements of LSTMs and GRUs, three fundamental bott
 The Transformer architecture (*Vaswani et al., 2017*) resolved the sequential bottleneck by replacing recurrences entirely with **Self-Attention**. NanoBrain specifically implements the **Decoder-Only Transformer** (pioneered by GPT-* Radford et al.*), where every token can directly attend to all previous tokens simultaneously in parallel operations.
 
 <p align="center">
-  <img src="images/gpt_architecture.svg" alt="Full GPT Decoder Architecture Vector SVG" width="400">
+  <img src="https://raw.githubusercontent.com/Amogh1221/NanoBrain/main/docs/images/gpt_architecture.svg" alt="Full GPT Decoder Architecture Vector SVG" width="400">
   <br>
   <em>Full GPT Decoder Architecture Vector Diagram.</em>
 </p>
@@ -219,7 +219,7 @@ Token IDs:       [3415, 29194, 1284]
 > **Intuition:** Because attention processes all words simultaneously, the model has no default idea of word order. Without positional embeddings, "dog bites man" and "man bites dog" would look identical. Positional embeddings inject a sense of time and order into each word vector.
 
 <p align="center">
-  <img src="images/positional_encoding.svg" alt="Positional Encoding Matrix Vector SVG" width="650">
+  <img src="https://raw.githubusercontent.com/Amogh1221/NanoBrain/main/docs/images/positional_encoding.svg" alt="Positional Encoding Matrix Vector SVG" width="650">
   <br>
   <em>Vector Heatmap of Sinusoidal Positional Encoding Patterns (Vaswani et al. Fixed Scheme).</em>
 </p>
@@ -245,7 +245,7 @@ $$R_{\theta_i, m} = \begin{pmatrix} \cos(m\theta_i) & -\sin(m\theta_i) \\ \sin(m
 > **Intuition:** Self-attention allows every word to ask a question ("Query"), check matching keys from earlier words ("Keys"), and extract relevant context ("Values"). The word "it" in "The bank approved the loan because it had money" uses self-attention to link "it" back to "bank". The "causal" part means a word can only look at past words, never future ones.
 
 <p align="center">
-  <img src="images/multi_head_attention.svg" alt="Multi-Head Attention Vector SVG" width="650">
+  <img src="https://raw.githubusercontent.com/Amogh1221/NanoBrain/main/docs/images/multi_head_attention.svg" alt="Multi-Head Attention Vector SVG" width="650">
   <br>
   <em>Causal Multi-Head Self-Attention Architecture Vector Diagram.</em>
 </p>
@@ -293,7 +293,7 @@ $$\frac{\partial \text{softmax}(z)_i}{\partial z_j} \approx 0 \quad \text{for } 
 > **Intuition:** Neural networks need non-linear functions to learn complex patterns. Without them, stacking 100 layers of neural networks would collapse into a single basic linear equation. GELU acts like a smooth dimmer switch rather than a harsh on/off toggle.
 
 <p align="center">
-  <img src="images/activation_functions.svg" alt="Activation Functions Comparison Vector Plot" width="600">
+  <img src="https://raw.githubusercontent.com/Amogh1221/NanoBrain/main/docs/images/activation_functions.svg" alt="Activation Functions Comparison Vector Plot" width="600">
   <br>
   <em>Exact Mathematical Comparison of ReLU, GELU, and Swish/SwiGLU Curves.</em>
 </p>
@@ -327,7 +327,7 @@ $$\hat{x}_i = \frac{x_i - \mu}{\sqrt{\sigma^2 + \epsilon}} \cdot \gamma_i + \bet
 > **Intuition:** Words mean the same thing whether you are reading them at the start of a sentence or predicting them at the end. Weight tying reuses the exact same embedding dictionary matrix for both input token reading and output word prediction, saving 38.6 Million parameters!
 
 <p align="center">
-  <img src="images/weight_tying_diagram.svg" alt="Weight Tying Architecture Vector Diagram" width="550">
+  <img src="https://raw.githubusercontent.com/Amogh1221/NanoBrain/main/docs/images/weight_tying_diagram.svg" alt="Weight Tying Architecture Vector Diagram" width="550">
   <br>
   <em>Weight Tying Architecture (wte == lm_head).</em>
 </p>
@@ -374,7 +374,7 @@ $$W_{lm\_head} = W_{te}^T$$
 > **Intuition:** Standard attention writes huge intermediate grids to slow GPU memory. FlashAttention breaks matrices into small tiles that fit entirely inside ultra-fast SRAM, calculates attention in chunks, and writes back only the final answer. This slashes memory usage and speeds up training.
 
 <p align="center">
-  <img src="images/flash_attention_tiling.svg" alt="GPU SRAM vs HBM Memory Hierarchy & FlashAttention Tiling Vector SVG" width="650">
+  <img src="https://raw.githubusercontent.com/Amogh1221/NanoBrain/main/docs/images/flash_attention_tiling.svg" alt="GPU SRAM vs HBM Memory Hierarchy & FlashAttention Tiling Vector SVG" width="650">
   <br>
   <em>GPU SRAM vs HBM Memory Hierarchy &amp; FlashAttention Tiled Execution Strategy Vector Diagram.</em>
 </p>
@@ -434,7 +434,7 @@ Forward (BF16) -> Loss -> Scaled Backprop -> Unscale -> FP32 Optimizer Step
 ### 3.6 Weight Decay, Fused AdamW, and Learning Rate Scheduling
 
 <p align="center">
-  <img src="images/learning_rate_schedule.svg" alt="Cosine Annealing Learning Rate Schedule Vector Plot" width="600">
+  <img src="https://raw.githubusercontent.com/Amogh1221/NanoBrain/main/docs/images/learning_rate_schedule.svg" alt="Cosine Annealing Learning Rate Schedule Vector Plot" width="600">
   <br>
   <em>Linear Warmup + Cosine Annealing Learning Rate Schedule.</em>
 </p>
@@ -492,7 +492,7 @@ $$P(x_i) = \frac{\exp(z_i / T)}{\sum_j \exp(z_j / T)}$$
 ### 4.3 Truncation Algorithms: Top-K and Top-p (Nucleus) Sampling
 
 <p align="center">
-  <img src="images/decoding_sampling.svg" alt="Temperature Scaling & Truncation Sampling Vector SVG" width="680">
+  <img src="https://raw.githubusercontent.com/Amogh1221/NanoBrain/main/docs/images/decoding_sampling.svg" alt="Temperature Scaling & Truncation Sampling Vector SVG" width="680">
   <br>
   <em>Temperature Scaling Distributions and Top-K / Top-p (Nucleus) Truncation Sampling.</em>
 </p>
@@ -507,7 +507,7 @@ $$P(x_i) = \frac{\exp(z_i / T)}{\sum_j \exp(z_j / T)}$$
 > **Intuition:** During text generation, word 101 needs the Keys and Values of words 1 to 100. Without caching, the GPU would re-calculate Keys and Values for words 1 to 100 over and over again for every single new word. A KV Cache stores past Keys and Values in memory so the model only computes the single new word.
 
 <p align="center">
-  <img src="images/kv_cache_growth.svg" alt="KV Cache Memory Growth vs Context Length Vector Diagram" width="650">
+  <img src="https://raw.githubusercontent.com/Amogh1221/NanoBrain/main/docs/images/kv_cache_growth.svg" alt="KV Cache Memory Growth vs Context Length Vector Diagram" width="650">
   <br>
   <em>KV Cache Memory Growth vs. Context Length T.</em>
 </p>
@@ -550,7 +550,7 @@ For a model with $n_{kv\_heads}=2$ (GQA) instead of $n_{heads}=12$, cache memory
 ### 5.2 Grouped-Query Attention (GQA) and Multi-Query Attention (MQA)
 
 <p align="center">
-  <img src="images/gqa_mha_mqa.svg" alt="Attention Head Architecture Comparison Vector SVG" width="650">
+  <img src="https://raw.githubusercontent.com/Amogh1221/NanoBrain/main/docs/images/gqa_mha_mqa.svg" alt="Attention Head Architecture Comparison Vector SVG" width="650">
   <br>
   <em>Structural Comparison of Multi-Head Attention (MHA), Grouped-Query Attention (GQA), and Multi-Query Attention (MQA).</em>
 </p>
@@ -564,7 +564,7 @@ GQA partitions 12 Query heads into groups that share 2 or 4 Key/Value heads, sla
 > **Intuition:** Pretraining teaches a model language structure by reading internet text, making it a great document completer. Post-pretraining aligns the model into a helpful, safe assistant that answers questions directly instead of just continuing text.
 
 <p align="center">
-  <img src="images/sft_rlhf_pipeline.svg" alt="Post-Pretraining Alignment Pipeline Vector Diagram" width="750">
+  <img src="https://raw.githubusercontent.com/Amogh1221/NanoBrain/main/docs/images/sft_rlhf_pipeline.svg" alt="Post-Pretraining Alignment Pipeline Vector Diagram" width="750">
   <br>
   <em>Post-Pretraining Alignment Pipeline (Pretraining → SFT → RLHF / DPO).</em>
 </p>
