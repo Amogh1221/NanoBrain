@@ -459,7 +459,7 @@ def main():
         for sf in source_files:
             pbar = tqdm(desc=sf.stem, unit=" doc", leave=False)
             for doc_text in iter_jsonl(sf):
-                outf.write(doc_text + "\n<|endoftext|>\n")
+                outf.write(doc_text + "\n\n\n")
                 written += 1
                 pbar.update(1)
             pbar.close()
