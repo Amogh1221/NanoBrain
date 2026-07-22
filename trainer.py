@@ -1,0 +1,562 @@
+"""
+trainer.py  —  nano_brain training loop
+========================================
+Full-featured trainer with:
+  - Mixed-precision (AMP) training with bfloat16/float16
+  - Gradient accumulation for large effective batch sizes
+  - Gradient clipping with norm tracking
+  - EMA (exponential moving average) of model weights
+  - Cosine LR schedule with warmup
+  - Checkpointing (latest + best by val loss)
+  - TensorBoard logging
+  - Rich terminal output (loss, grad_norm, tok/s, VRAM, ETA)
+  - Persistent file logging to logs/training_log.txt
+  - Text sample generation at intervals
+"""
+
+import os
+import math
+import time
+import logging
+from dataclasses import asdict
+from datetime import datetime
+
+import torch
+import torch.nn.functional as F
+from torch.utils.tensorboard import SummaryWriter
+from tqdm import tqdm
+
+from config import GPTConfig
+from model import GPT, EMA
+from dataset import create_dataloaders, load_data
+
+# ──────────────────────────────────────────────────────────────────────────────
+# Dtype mapping
+# ──────────────────────────────────────────────────────────────────────────────
+
+_DTYPE_MAP = {
+    "float16": torch.float16,
+    "bfloat16": torch.bfloat16,
+    "float32": torch.float32,
+}
+
+# ──────────────────────────────────────────────────────────────────────────────
+# LR schedule
+# ──────────────────────────────────────────────────────────────────────────────
+
+
+def get_lr(it, config: GPTConfig):
+    if it < config.warmup_iters:
+        return config.learning_rate * (it + 1) / (config.warmup_iters + 1)
+    if it > config.lr_decay_iters:
+        return config.min_lr
+    decay_ratio = (it - config.warmup_iters) / (
+        config.lr_decay_iters - config.warmup_iters
+    )
+    coeff = 0.5 * (1.0 + math.cos(math.pi * decay_ratio))
+    return config.min_lr + coeff * (config.learning_rate - config.min_lr)
+
+
+# ──────────────────────────────────────────────────────────────────────────────
+# Helpers
+# ──────────────────────────────────────────────────────────────────────────────
+
+
+def _format_eta(seconds: float) -> str:
+    """Format seconds into a human-readable ETA string."""
+    if seconds < 0:
+        return "N/A"
+    days = int(seconds // 86400)
+    hours = int((seconds % 86400) // 3600)
+    minutes = int((seconds % 3600) // 60)
+    if days > 0:
+        return f"{days}d {hours}h {minutes}m"
+    if hours > 0:
+        return f"{hours}h {minutes}m"
+    return f"{minutes}m"
+
+
+def _format_elapsed(seconds: float) -> str:
+    """Format elapsed seconds as HH:MM:SS."""
+    h = int(seconds // 3600)
+    m = int((seconds % 3600) // 60)
+    s = int(seconds % 60)
+    return f"{h:02d}:{m:02d}:{s:02d}"
+
+
+def _vram_gb() -> tuple[float, float]:
+    """Return (allocated_gb, total_gb) for CUDA device 0."""
+    if not torch.cuda.is_available():
+        return 0.0, 0.0
+    allocated = torch.cuda.memory_allocated(0) / 1e9
+    total = torch.cuda.get_device_properties(0).total_memory / 1e9
+    return allocated, total
+
+
+# ──────────────────────────────────────────────────────────────────────────────
+# File logger
+# ──────────────────────────────────────────────────────────────────────────────
+
+
+class FileLogger:
+    """
+    Persistent structured logger that writes to logs/training_log.txt.
+    Survives terminal closes, SSH drops, and crashes.
+    """
+
+    def __init__(self, log_dir: str = "logs"):
+        os.makedirs(log_dir, exist_ok=True)
+        self.path = os.path.join(log_dir, "training_log.txt")
+        self.file = open(self.path, "a", encoding="utf-8")
+
+    def _ts(self) -> str:
+        return datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+    def write(self, msg: str, flush: bool = True):
+        self.file.write(msg + "\n")
+        if flush:
+            self.file.flush()
+
+    def log_step(self, step, total, loss, lr, grad_norm, tok_sec, vram_alloc, eta_str):
+        line = (
+            f"[{self._ts()}] STEP {step:>7d}/{total} | "
+            f"loss={loss:.4f} | lr={lr:.2e} | grad_norm={grad_norm:.3f} | "
+            f"tok/s={tok_sec:,.0f} | VRAM={vram_alloc:.1f}GB | ETA={eta_str}"
+        )
+        self.write(line)
+
+    def log_eval(self, step, total, train_loss, val_loss, best_val, ppl,
+                 ema_val, lr, avg_grad_norm, tok_sec, vram_alloc, vram_total,
+                 elapsed_str, eta_str):
+        pct = step / total * 100 if total > 0 else 0
+        delta_val = val_loss - best_val if best_val < float("inf") and val_loss != best_val else 0.0
+        delta_str = f"Δ: {delta_val:+.4f}" if delta_val != 0 else "NEW BEST"
+
+        hr = "═" * 56
+        block = f"""
+{hr}
+  EVALUATION @ Step {step} / {total}   ({pct:.1f}%)
+{hr}
+  Train Loss     : {train_loss:.4f}
+  Val Loss       : {val_loss:.4f}  (best: {best_val:.4f}  {delta_str})
+  Perplexity     : {ppl:.2f}
+  EMA Val Loss   : {f'{ema_val:.4f}' if ema_val is not None else 'N/A'}
+  Learning Rate  : {lr:.2e}
+  Avg Grad Norm  : {avg_grad_norm:.3f}
+  Tokens/sec     : {tok_sec:,.0f}
+  VRAM           : {vram_alloc:.1f} / {vram_total:.1f} GB
+  Elapsed        : {elapsed_str}
+  ETA            : {eta_str}
+{hr}"""
+        self.write(block)
+
+    def log_config(self, config: GPTConfig, n_params: int):
+        hr = "═" * 56
+        self.write(f"\n{hr}")
+        self.write(f"  TRAINING STARTED — {self._ts()}")
+        self.write(f"{hr}")
+        self.write(f"  Model params    : {n_params:,}")
+        for k, v in asdict(config).items():
+            self.write(f"  {k:<28s}: {v}")
+        self.write(hr)
+
+    def log_end(self, step, elapsed, best_val):
+        hr = "═" * 56
+        self.write(f"\n{hr}")
+        self.write(f"  TRAINING COMPLETE — {self._ts()}")
+        self.write(f"  Final step     : {step:,}")
+        self.write(f"  Elapsed        : {_format_elapsed(elapsed)}")
+        self.write(f"  Best val loss  : {best_val:.4f}")
+        self.write(f"  Best perplexity: {math.exp(best_val):.2f}")
+        self.write(hr)
+
+    def close(self):
+        self.file.close()
+
+
+# ──────────────────────────────────────────────────────────────────────────────
+# Trainer
+# ──────────────────────────────────────────────────────────────────────────────
+
+
+class Trainer:
+    def __init__(self, config: GPTConfig, tokenizer):
+        self.config = config
+        self.tokenizer = tokenizer
+        self.device = torch.device(config.device)
+
+        os.makedirs("checkpoints", exist_ok=True)
+        os.makedirs("samples", exist_ok=True)
+        os.makedirs("runs", exist_ok=True)
+
+        self.writer = SummaryWriter(log_dir="runs")
+        self.flog = FileLogger("logs")
+
+        self.model = GPT(config).to(self.device)
+        self.n_params = sum(p.numel() for p in self.model.parameters())
+        print(f"Model parameters: {self.n_params:,}")
+
+        if config.compile and hasattr(torch, "compile"):
+            print("Compiling model...")
+            self.model = torch.compile(self.model, mode="default")
+
+        self.optimizer = self.model.configure_optimizers(config)
+
+        self.ema = (
+            EMA(self.model, decay=config.ema_decay) if config.use_ema else None
+        )
+
+        self.scaler = torch.amp.GradScaler(
+            "cuda", enabled=(config.dtype == "float16")
+        )
+
+        data = load_data(config.data_dir, config.dataset, tokenizer)
+        self.train_loader, self.val_loader = create_dataloaders(
+            data,
+            config.block_size,
+            config.batch_size,
+            num_workers=0,
+            pin_memory=True,
+        )
+        self.train_iter = iter(self.train_loader)
+
+        self.iter_num = 0
+        self.best_val_loss = float("inf")
+        self.micro_step = 0
+
+        # Metrics accumulators
+        self._grad_norm_sum = 0.0
+        self._grad_norm_count = 0
+        self._tokens_processed = 0
+        self._last_log_time = None
+
+    def get_batch(self, split):
+        if split == "train":
+            try:
+                x, y = next(self.train_iter)
+            except StopIteration:
+                self.train_iter = iter(self.train_loader)
+                x, y = next(self.train_iter)
+        else:
+            loader_iter = iter(self.val_loader)
+            x, y = next(loader_iter)
+        return x.to(self.device), y.to(self.device)
+
+    @torch.no_grad()
+    def estimate_loss(self):
+        out = {}
+        self.model.eval()
+        for split, loader in [("train", self.train_loader), ("val", self.val_loader)]:
+            losses = torch.zeros(self.config.eval_iters, device=self.device)
+            loader_iter = iter(loader)
+            for k in range(self.config.eval_iters):
+                try:
+                    x, y = next(loader_iter)
+                except StopIteration:
+                    loader_iter = iter(loader)
+                    x, y = next(loader_iter)
+                x, y = x.to(self.device), y.to(self.device)
+                with torch.amp.autocast(
+                    "cuda",
+                    dtype=_DTYPE_MAP.get(self.config.dtype, torch.float16),
+                    enabled=self.config.dtype != "float32",
+                ):
+                    logits, _ = self.model(x)
+                    loss = F.cross_entropy(
+                        logits.view(-1, logits.size(-1)),
+                        y.view(-1),
+                    )
+                losses[k] = loss
+            out[split] = losses.mean().item()
+        self.model.train()
+        return out
+
+    def save_checkpoint(self, path, is_best=False):
+        ckpt = {
+            "model_state_dict": self.model.state_dict(),
+            "optimizer_state_dict": self.optimizer.state_dict(),
+            "iter_num": self.iter_num,
+            "best_val_loss": self.best_val_loss,
+            "config": self.config,
+        }
+        if self.ema is not None:
+            ckpt["ema"] = self.ema.state_dict()
+        if self.config.dtype == "float16":
+            ckpt["scaler"] = self.scaler.state_dict()
+        torch.save(ckpt, path)
+        if is_best:
+            torch.save(ckpt, "checkpoints/best.pt")
+
+    def load_checkpoint(self, path):
+        ckpt = torch.load(path, map_location=self.device, weights_only=False)
+        self.model.load_state_dict(ckpt["model_state_dict"])
+        self.optimizer.load_state_dict(ckpt["optimizer_state_dict"])
+        self.iter_num = ckpt["iter_num"]
+        self.best_val_loss = ckpt.get("best_val_loss", float("inf"))
+        if self.ema is not None and "ema" in ckpt:
+            self.ema.load_state_dict(ckpt["ema"])
+        if self.config.dtype == "float16" and "scaler" in ckpt:
+            self.scaler.load_state_dict(ckpt["scaler"])
+        print(f"Resumed from iteration {self.iter_num}")
+
+    def generate_samples(self):
+        self.model.eval()
+        if self.ema is not None:
+            self.ema.apply_shadow()
+
+        context = torch.zeros((1, 1), dtype=torch.long, device=self.device)
+        for i in range(self.config.num_generations):
+            temp = self.config.temperature * (1.0 + 0.1 * i)
+            out = self.model.generate(
+                context,
+                max_new_tokens=self.config.max_new_tokens_gen,
+                temperature=temp,
+                top_k=self.config.top_k,
+                top_p=self.config.top_p,
+            )
+            text = self.tokenizer.decode(out[0].tolist())
+            sample_path = f"samples/step_{self.iter_num:07d}_{i}.txt"
+            with open(sample_path, "w", encoding="utf-8") as f:
+                f.write(text)
+            preview = text[:200].encode("ascii", errors="replace").decode("ascii")
+            print(f"\nSample {i} (t={temp:.2f}):\n{preview}...\n")
+
+        if self.ema is not None:
+            self.ema.restore()
+        self.model.train()
+
+    def _get_tokens_per_step(self) -> int:
+        """Tokens processed per optimizer step (across all gradient accumulation micro-steps)."""
+        return (
+            self.config.batch_size
+            * self.config.block_size
+            * self.config.gradient_accumulation_steps
+        )
+
+    def train(self):
+        config = self.config
+        model = self.model
+        optimizer = self.optimizer
+        scaler = self.scaler
+
+        # ── Log config at training start ─────────────────────────────────
+        self.flog.log_config(config, self.n_params)
+
+        model.train()
+        running_loss = 0.0
+        start_time = time.time()
+        self._last_log_time = start_time
+        self._tokens_processed = 0
+
+        tokens_per_step = self._get_tokens_per_step()
+
+        pbar = tqdm(
+            total=config.max_iters,
+            initial=self.iter_num,
+            desc="Training",
+            dynamic_ncols=True,
+        )
+
+        while self.iter_num < config.max_iters:
+            lr = get_lr(self.iter_num, config)
+            for param_group in optimizer.param_groups:
+                param_group["lr"] = lr
+
+            x, y = self.get_batch("train")
+
+            with torch.amp.autocast(
+                "cuda",
+                dtype=_DTYPE_MAP.get(config.dtype, torch.float16),
+                enabled=config.dtype != "float32",
+            ):
+                logits, _ = model(x)
+                loss = F.cross_entropy(
+                    logits.view(-1, logits.size(-1)),
+                    y.view(-1),
+                )
+                loss = loss / config.gradient_accumulation_steps
+
+            scaler.scale(loss).backward()
+
+            self.micro_step += 1
+
+            if self.micro_step % config.gradient_accumulation_steps == 0:
+                # ── Gradient clipping + norm tracking ────────────────────
+                grad_norm = 0.0
+                if config.grad_clip > 0.0:
+                    scaler.unscale_(optimizer)
+                    grad_norm = torch.nn.utils.clip_grad_norm_(
+                        model.parameters(), config.grad_clip
+                    ).item()
+                else:
+                    # Still compute norm for logging even without clipping
+                    total_norm_sq = 0.0
+                    for p in model.parameters():
+                        if p.grad is not None:
+                            total_norm_sq += p.grad.data.float().norm().item() ** 2
+                    grad_norm = total_norm_sq ** 0.5
+
+                self._grad_norm_sum += grad_norm
+                self._grad_norm_count += 1
+
+                scaler.step(optimizer)
+                scaler.update()
+                optimizer.zero_grad(set_to_none=True)
+
+                if self.ema is not None:
+                    self.ema.update()
+
+                step_loss = loss.item() * config.gradient_accumulation_steps
+                running_loss += step_loss
+                self._tokens_processed += tokens_per_step
+
+                # ── Per-step terminal + file log ─────────────────────────
+                if self.iter_num % config.log_interval == 0 and self.iter_num > 0:
+                    avg_loss = running_loss / config.log_interval
+                    now = time.time()
+                    elapsed = now - start_time
+                    dt = now - self._last_log_time if self._last_log_time else 1.0
+                    tok_sec = (config.log_interval * tokens_per_step) / max(dt, 1e-6)
+                    self._last_log_time = now
+
+                    vram_alloc, vram_total = _vram_gb()
+                    steps_remaining = config.max_iters - self.iter_num
+                    sec_per_step = elapsed / max(self.iter_num, 1)
+                    eta = steps_remaining * sec_per_step
+                    eta_str = _format_eta(eta)
+
+                    avg_gn = self._grad_norm_sum / max(self._grad_norm_count, 1)
+
+                    # Terminal
+                    print(
+                        f"\r[Step {self.iter_num:>7d}/{config.max_iters}]  "
+                        f"loss={avg_loss:.4f}  lr={lr:.2e}  "
+                        f"grad_norm={avg_gn:.3f}  "
+                        f"tok/s={tok_sec:,.0f}  "
+                        f"VRAM={vram_alloc:.1f}/{vram_total:.1f}GB  "
+                        f"ETA={eta_str}"
+                    )
+
+                    # TensorBoard
+                    self.writer.add_scalar("train/loss", avg_loss, self.iter_num)
+                    self.writer.add_scalar("train/lr", lr, self.iter_num)
+                    self.writer.add_scalar("train/grad_norm", avg_gn, self.iter_num)
+                    self.writer.add_scalar("train/tokens_per_sec", tok_sec, self.iter_num)
+
+                    # File log (one-line)
+                    self.flog.log_step(
+                        self.iter_num, config.max_iters, avg_loss, lr,
+                        avg_gn, tok_sec, vram_alloc, eta_str,
+                    )
+
+                    running_loss = 0.0
+                    self._grad_norm_sum = 0.0
+                    self._grad_norm_count = 0
+
+                # ── Evaluation ───────────────────────────────────────────
+                if self.iter_num % config.eval_interval == 0 and self.iter_num > 0:
+                    losses = self.estimate_loss()
+                    val_loss = losses["val"]
+                    train_loss = losses["train"]
+                    ppl = math.exp(min(val_loss, 20.0))  # cap to prevent overflow
+
+                    self.writer.add_scalar("eval/train_loss", train_loss, self.iter_num)
+                    self.writer.add_scalar("eval/val_loss", val_loss, self.iter_num)
+                    self.writer.add_scalar("eval/perplexity", ppl, self.iter_num)
+
+                    # EMA evaluation
+                    ema_val = None
+                    if self.ema is not None:
+                        self.ema.apply_shadow()
+                        ema_losses = self.estimate_loss()
+                        ema_val = ema_losses["val"]
+                        self.writer.add_scalar(
+                            "eval/ema_val_loss", ema_val, self.iter_num
+                        )
+                        self.ema.restore()
+
+                    # Compute metrics for display
+                    elapsed = time.time() - start_time
+                    now = time.time()
+                    sec_per_step = elapsed / max(self.iter_num, 1)
+                    steps_remaining = config.max_iters - self.iter_num
+                    eta = steps_remaining * sec_per_step
+                    vram_alloc, vram_total = _vram_gb()
+                    avg_gn = self._grad_norm_sum / max(self._grad_norm_count, 1)
+                    tok_sec = tokens_per_step / max(sec_per_step, 1e-6)
+
+                    is_best = val_loss < self.best_val_loss
+
+                    # Terminal — structured eval block
+                    hr = "═" * 56
+                    pct = self.iter_num / config.max_iters * 100
+                    delta_val = val_loss - self.best_val_loss if self.best_val_loss < float("inf") else 0.0
+                    delta_str = f"Δ: {delta_val:+.4f}" if not is_best else "NEW BEST ★"
+
+                    print(f"\n{hr}")
+                    print(f"  EVALUATION @ Step {self.iter_num} / {config.max_iters}   ({pct:.1f}%)")
+                    print(hr)
+                    print(f"  Train Loss     : {train_loss:.4f}")
+                    print(f"  Val Loss       : {val_loss:.4f}  (best: {self.best_val_loss:.4f}  {delta_str})")
+                    print(f"  Perplexity     : {ppl:.2f}")
+                    if ema_val is not None:
+                        print(f"  EMA Val Loss   : {ema_val:.4f}")
+                    print(f"  Learning Rate  : {lr:.2e}")
+                    print(f"  Avg Grad Norm  : {avg_gn:.3f}")
+                    print(f"  Tokens/sec     : {tok_sec:,.0f}")
+                    print(f"  VRAM           : {vram_alloc:.1f} / {vram_total:.1f} GB")
+                    print(f"  Elapsed        : {_format_elapsed(elapsed)}")
+                    print(f"  ETA            : {_format_eta(eta)}")
+                    print(hr)
+
+                    # File log — structured eval block
+                    self.flog.log_eval(
+                        step=self.iter_num,
+                        total=config.max_iters,
+                        train_loss=train_loss,
+                        val_loss=val_loss,
+                        best_val=self.best_val_loss,
+                        ppl=ppl,
+                        ema_val=ema_val,
+                        lr=lr,
+                        avg_grad_norm=avg_gn,
+                        tok_sec=tok_sec,
+                        vram_alloc=vram_alloc,
+                        vram_total=vram_total,
+                        elapsed_str=_format_elapsed(elapsed),
+                        eta_str=_format_eta(eta),
+                    )
+
+                    # Update tqdm postfix
+                    pbar.set_postfix({
+                        "train": f"{train_loss:.4f}",
+                        "val": f"{val_loss:.4f}",
+                        "ppl": f"{ppl:.1f}",
+                        "lr": f"{lr:.2e}",
+                    })
+
+                    # Save checkpoint
+                    if is_best:
+                        self.best_val_loss = val_loss
+                        self.save_checkpoint("checkpoints/latest.pt", is_best=True)
+                    else:
+                        self.save_checkpoint("checkpoints/latest.pt")
+
+                if self.iter_num % config.gen_interval == 0 and self.iter_num > 0:
+                    self.generate_samples()
+
+                if self.iter_num % config.save_interval == 0 and self.iter_num > 0:
+                    self.save_checkpoint("checkpoints/latest.pt")
+
+                self.iter_num += 1
+                pbar.update(1)
+
+        pbar.close()
+        self.save_checkpoint("checkpoints/latest.pt")
+        elapsed = time.time() - start_time
+        print(f"\nTraining completed in {elapsed / 3600:.2f} hours")
+        print(f"Best val loss: {self.best_val_loss:.4f}  (perplexity: {math.exp(self.best_val_loss):.2f})")
+
+        self.flog.log_end(self.iter_num, elapsed, self.best_val_loss)
+        self.flog.close()
+        self.writer.close()
