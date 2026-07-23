@@ -1,53 +1,76 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 850 450" width="100%" height="100%" style="background-color: #0d1117; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
-  <style>
-    .title { font-size: 18px; font-weight: bold; fill: #58a6ff; text-anchor: middle; }
-    .box-title { font-size: 13px; font-weight: bold; fill: #ffffff; text-anchor: middle; }
-    .sub-text { font-size: 11px; fill: #8b949e; text-anchor: middle; }
-    .highway { stroke: #3fb950; stroke-width: 4; fill: none; }
-    .arrow { stroke: #58a6ff; stroke-width: 2; marker-end: url(#arrowhead); }
-  </style>
-
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 350" width="600" height="350" style="background-color: white; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;">
   <defs>
-    <marker id="arrowhead" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
-      <polygon points="0 0, 8 3, 0 6" fill="#58a6ff" />
-    </marker>
+    <marker id="arrow" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#000"/></marker>
   </defs>
 
-  <rect width="100%" height="100%" fill="#0d1117"/>
-  <text x="425" y="35" class="title">LSTM Cell Gating Mechanics &amp; Memory Highway</text>
+  <!-- Cell Background -->
+  <rect x="100" y="50" width="400" height="250" rx="20" fill="#E8EDDF" stroke="#B5B682" stroke-width="3"/>
+  <text x="300" y="290" font-size="20" font-weight="bold" fill="#B5B682" text-anchor="middle">LSTM Cell</text>
 
-  <!-- Cell State Highway C_t -->
-  <path d="M 50 100 L 800 100" class="highway"/>
-  <text x="75" y="80" class="sub-text" style="fill:#3fb950; font-weight:bold; font-size:12px;">Cell Memory Highway (C_{t-1} → C_t)</text>
+  <!-- Cell State Line (Top) -->
+  <line x1="20" y1="90" x2="580" y2="90" stroke="#000" stroke-width="2.5" marker-end="url(#arrow)"/>
+  <text x="40" y="80" font-size="18" font-weight="bold">C<tspan dy="5" font-size="12">t-1</tspan></text>
+  <text x="560" y="80" font-size="18" font-weight="bold">C<tspan dy="5" font-size="12">t</tspan></text>
 
-  <!-- Outer Cell Box -->
-  <rect x="120" y="130" width="600" height="280" rx="12" fill="#161b22" stroke="#30363d" stroke-width="2"/>
+  <!-- Inputs (Bottom) -->
+  <line x1="130" y1="330" x2="130" y2="260" stroke="#000" stroke-width="2.5" marker-end="url(#arrow)"/>
+  <text x="130" y="345" font-size="18" font-weight="bold" text-anchor="middle">h<tspan dy="5" font-size="12">t-1</tspan></text>
+  
+  <line x1="200" y1="330" x2="200" y2="260" stroke="#000" stroke-width="2.5" marker-end="url(#arrow)"/>
+  <text x="200" y="345" font-size="18" font-weight="bold" text-anchor="middle">x<tspan dy="5" font-size="12">t</tspan></text>
 
-  <!-- Forget Gate f_t -->
-  <rect x="150" y="240" width="110" height="60" rx="8" fill="#da3633" stroke="#f85149" stroke-width="1.5"/>
-  <text x="205" y="267" class="box-title">Forget Gate f_t</text>
-  <text x="205" y="285" class="sub-text" style="fill:#ff7b72;">σ(W_f · [h_{t-1}, x_t])</text>
-  <text x="205" y="325" class="sub-text" style="fill:#ff7b72;">Erase old memory</text>
+  <!-- Concatenation Line -->
+  <path d="M 130 260 L 130 240 L 420 240" fill="none" stroke="#000" stroke-width="2.5"/>
+  <path d="M 200 260 L 200 240" fill="none" stroke="#000" stroke-width="2.5"/>
+  
+  <!-- Forget Gate -->
+  <path d="M 160 240 L 160 180" fill="none" stroke="#000" stroke-width="2.5" marker-end="url(#arrow)"/>
+  <rect x="145" y="150" width="30" height="30" rx="3" fill="#F4D03F" stroke="#B7950B" stroke-width="2"/>
+  <text x="160" y="170" font-size="16" font-style="italic" text-anchor="middle">σ</text>
+  
+  <path d="M 160 150 L 160 105" fill="none" stroke="#000" stroke-width="2.5" marker-end="url(#arrow)"/>
+  <circle cx="160" cy="90" r="15" fill="#F5B7B1" stroke="#E74C3C" stroke-width="2"/>
+  <text x="160" y="96" font-size="18" font-weight="bold" text-anchor="middle">×</text>
 
-  <!-- Input Gate i_t & Candidate C~_t -->
-  <rect x="290" y="240" width="130" height="60" rx="8" fill="#238636" stroke="#3fb950" stroke-width="1.5"/>
-  <text x="355" y="267" class="box-title">Input Gate i_t</text>
-  <text x="355" y="285" class="sub-text" style="fill:#7ee787;">σ(W_i) * tanh(C~_t)</text>
-  <text x="355" y="325" class="sub-text" style="fill:#7ee787;">Write new memory</text>
+  <!-- Input Gate (Sigma and Tanh) -->
+  <path d="M 250 240 L 250 180" fill="none" stroke="#000" stroke-width="2.5" marker-end="url(#arrow)"/>
+  <rect x="235" y="150" width="30" height="30" rx="3" fill="#F4D03F" stroke="#B7950B" stroke-width="2"/>
+  <text x="250" y="170" font-size="16" font-style="italic" text-anchor="middle">σ</text>
+  
+  <path d="M 310 240 L 310 180" fill="none" stroke="#000" stroke-width="2.5" marker-end="url(#arrow)"/>
+  <rect x="290" y="150" width="40" height="30" rx="3" fill="#F4D03F" stroke="#B7950B" stroke-width="2"/>
+  <text x="310" y="170" font-size="14" text-anchor="middle">tanh</text>
 
-  <!-- Output Gate o_t -->
-  <rect x="460" y="240" width="110" height="60" rx="8" fill="#8957e5" stroke="#ab7df8" stroke-width="1.5"/>
-  <text x="515" y="267" class="box-title">Output Gate o_t</text>
-  <text x="515" y="285" class="sub-text" style="fill:#d2a8ff;">σ(W_o · [h, x])</text>
-  <text x="515" y="325" class="sub-text" style="fill:#d2a8ff;">Expose hidden h_t</text>
+  <!-- Input Gate pointwise mult -->
+  <path d="M 250 150 L 250 120 L 265 120" fill="none" stroke="#000" stroke-width="2.5" marker-end="url(#arrow)"/>
+  <path d="M 310 150 L 310 120 L 295 120" fill="none" stroke="#000" stroke-width="2.5" marker-end="url(#arrow)"/>
+  <circle cx="280" cy="120" r="15" fill="#F5B7B1" stroke="#E74C3C" stroke-width="2"/>
+  <text x="280" y="126" font-size="18" font-weight="bold" text-anchor="middle">×</text>
+  
+  <path d="M 280 105 L 280 90" fill="none" stroke="#000" stroke-width="2.5"/>
+  <circle cx="280" cy="90" r="15" fill="#F5B7B1" stroke="#E74C3C" stroke-width="2"/>
+  <text x="280" y="96" font-size="18" font-weight="bold" text-anchor="middle">+</text>
 
-  <!-- Hidden State Output h_t -->
-  <rect x="600" y="240" width="90" height="60" rx="8" fill="#1f6feb" stroke="#388bfd" stroke-width="1.5"/>
-  <text x="645" y="270" class="box-title">Hidden h_t</text>
-  <text x="645" y="288" class="sub-text" style="fill:#79c0ff;">o_t * tanh(C_t)</text>
+  <!-- Output Gate -->
+  <path d="M 420 240 L 420 180" fill="none" stroke="#000" stroke-width="2.5" marker-end="url(#arrow)"/>
+  <rect x="405" y="150" width="30" height="30" rx="3" fill="#F4D03F" stroke="#B7950B" stroke-width="2"/>
+  <text x="420" y="170" font-size="16" font-style="italic" text-anchor="middle">σ</text>
 
-  <!-- Inputs x_t and h_{t-1} -->
-  <line x1="50" y1="370" x2="690" y2="370" stroke="#58a6ff" stroke-width="2" stroke-dasharray="4,4"/>
-  <text x="80" y="360" class="sub-text" style="fill:#58a6ff;">Inputs: x_t (Current Word) + h_{t-1} (Previous Hidden State)</text>
+  <!-- Cell State Tanh -->
+  <path d="M 450 90 L 450 125" fill="none" stroke="#000" stroke-width="2.5" marker-end="url(#arrow)"/>
+  <rect x="430" y="125" width="40" height="30" rx="15" fill="#F5B7B1" stroke="#E74C3C" stroke-width="2"/>
+  <text x="450" y="145" font-size="14" text-anchor="middle">tanh</text>
+
+  <!-- Output pointwise mult -->
+  <path d="M 450 155 L 450 185" fill="none" stroke="#000" stroke-width="2.5" marker-end="url(#arrow)"/>
+  <path d="M 420 150 L 420 200 L 435 200" fill="none" stroke="#000" stroke-width="2.5" marker-end="url(#arrow)"/>
+  <circle cx="450" cy="200" r="15" fill="#F5B7B1" stroke="#E74C3C" stroke-width="2"/>
+  <text x="450" y="206" font-size="18" font-weight="bold" text-anchor="middle">×</text>
+  
+  <path d="M 450 215 L 450 270 L 580 270" fill="none" stroke="#000" stroke-width="2.5" marker-end="url(#arrow)"/>
+  <text x="560" y="260" font-size="18" font-weight="bold">h<tspan dy="5" font-size="12">t</tspan></text>
+  
+  <path d="M 450 270 L 450 330" fill="none" stroke="#000" stroke-width="2.5" marker-end="url(#arrow)"/>
+  <text x="460" y="320" font-size="18" font-weight="bold">h<tspan dy="5" font-size="12">t</tspan></text>
 
 </svg>
