@@ -1,46 +1,46 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 400" width="500" height="400" style="background-color: white; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 480" width="100%" height="100%" style="background-color: #0d1117; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
+  <style>
+    .title { font-size: 18px; font-weight: bold; fill: #58a6ff; text-anchor: middle; }
+    .box-title { font-size: 14px; font-weight: bold; fill: #ffffff; text-anchor: middle; }
+    .sub-text { font-size: 11px; fill: #8b949e; text-anchor: middle; }
+    .arrow { stroke: #f1c40f; stroke-width: 2.5; marker-end: url(#arrowhead-gold); }
+  </style>
+
   <defs>
-    <marker id="arrow" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#000"/></marker>
+    <marker id="arrowhead-gold" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+      <polygon points="0 0, 8 3, 0 6" fill="#f1c40f" />
+    </marker>
+    <linearGradient id="grad-gold" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#d97706" />
+      <stop offset="100%" stop-color="#b45309" />
+    </linearGradient>
   </defs>
 
-  <text x="250" y="40" font-size="20" font-weight="bold" text-anchor="middle" fill="#111827">Weight Tying in Language Models</text>
-  <text x="250" y="60" font-size="14" fill="#4B5563" text-anchor="middle">(Press &amp; Wolf, 2016)</text>
+  <rect width="100%" height="100%" fill="#0d1117"/>
+  <text x="300" y="35" class="title">Weight Tying Architecture (wte == lm_head)</text>
 
-  <!-- Input Token Embedding -->
-  <g transform="translate(50, 100)">
-    <text x="75" y="0" font-size="14" font-weight="bold" text-anchor="middle">Input Embedding Matrix</text>
-    <text x="75" y="15" font-size="12" fill="#4B5563" text-anchor="middle">Shape: Vocab × Dim</text>
-    
-    <rect x="25" y="30" width="100" height="150" fill="#DBEAFE" stroke="#2563EB" stroke-width="2"/>
-    <text x="75" y="105" font-size="20" font-weight="bold" fill="#1E3A8A" text-anchor="middle">W</text>
-    
-    <!-- Token indices -->
-    <text x="10" y="50" font-size="12" fill="#4B5563" text-anchor="end">Token 1</text>
-    <text x="10" y="80" font-size="12" fill="#4B5563" text-anchor="end">Token 2</text>
-    <text x="10" y="110" font-size="12" fill="#4B5563" text-anchor="end">...</text>
-    <text x="10" y="160" font-size="12" fill="#4B5563" text-anchor="end">Token V</text>
-  </g>
+  <!-- Top Output Logits -->
+  <rect x="150" y="70" width="300" height="50" rx="8" fill="#1f6feb" stroke="#388bfd" stroke-width="1.5"/>
+  <text x="300" y="95" class="box-title">Output Projection (lm_head)</text>
+  <text x="300" y="110" class="sub-text" style="fill:#79c0ff;">Uses W_te^T Matrix → Logits [B, T, 50258]</text>
 
-  <!-- Sharing Indicator -->
-  <path d="M 190 205 Q 250 205 310 205" fill="none" stroke="#10B981" stroke-width="3" stroke-dasharray="8,4" marker-end="url(#arrow)"/>
-  <path d="M 310 205 Q 250 205 190 205" fill="none" stroke="#10B981" stroke-width="3" stroke-dasharray="8,4" marker-end="url(#arrow)"/>
-  <text x="250" y="195" font-size="14" font-weight="bold" fill="#047857" text-anchor="middle">Shared Weights</text>
+  <!-- Center Shared Matrix W_te -->
+  <rect x="130" y="180" width="340" height="90" rx="12" fill="url(#grad-gold)" stroke="#f59e0b" stroke-width="2"/>
+  <text x="300" y="215" class="box-title" style="font-size:16px;">Shared Weight Matrix W_te</text>
+  <text x="300" y="240" class="sub-text" style="fill:#fef3c7; font-size:13px; font-weight:600;">Shape: [50,258 × 768] (38,598,144 Parameters)</text>
+  <text x="300" y="258" class="sub-text" style="fill:#fde68a;">Reused in both Input Embedding and Output Head</text>
 
-  <!-- Output Projection -->
-  <g transform="translate(300, 100)">
-    <text x="75" y="0" font-size="14" font-weight="bold" text-anchor="middle">Output Projection Matrix</text>
-    <text x="75" y="15" font-size="12" fill="#4B5563" text-anchor="middle">Shape: Dim × Vocab</text>
-    
-    <rect x="0" y="110" width="150" height="70" fill="#DCFCE7" stroke="#16A34A" stroke-width="2"/>
-    <text x="75" y="155" font-size="20" font-weight="bold" fill="#14532D" text-anchor="middle">W<tspan dy="-10" font-size="14">T</tspan></text>
-    
-    <!-- Token probabilities -->
-    <text x="20" y="200" font-size="12" fill="#4B5563" text-anchor="middle">Prob 1</text>
-    <text x="75" y="200" font-size="12" fill="#4B5563" text-anchor="middle">...</text>
-    <text x="130" y="200" font-size="12" fill="#4B5563" text-anchor="middle">Prob V</text>
-  </g>
+  <!-- Bottom Input Embedding -->
+  <rect x="150" y="330" width="300" height="50" rx="8" fill="#238636" stroke="#3fb950" stroke-width="1.5"/>
+  <text x="300" y="355" class="box-title">Input Token Embedding (wte)</text>
+  <text x="300" y="370" class="sub-text" style="fill:#7ee787;">Uses W_te Matrix Lookup → Vectors [B, T, 768]</text>
 
-  <rect x="50" y="320" width="400" height="60" rx="5" fill="#F3F4F6" stroke="#9CA3AF" stroke-width="1"/>
-  <text x="250" y="345" font-size="14" font-weight="bold" fill="#111827" text-anchor="middle">Benefits of Weight Tying</text>
-  <text x="250" y="365" font-size="12" fill="#374151" text-anchor="middle">Saves massive amount of parameters (~30% of small models)</text>
+  <!-- Arrows -->
+  <line x1="300" y1="180" x2="300" y2="125" class="arrow"/>
+  <line x1="300" y1="330" x2="300" y2="275" class="arrow"/>
+
+  <text x="300" y="430" class="sub-text" style="fill:#3fb950; font-size:13px; font-weight:bold;">
+    ✅ Saves 38,598,144 duplicate parameters &amp; enforces semantic space symmetry
+  </text>
+
 </svg>
