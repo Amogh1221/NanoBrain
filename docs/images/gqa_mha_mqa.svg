@@ -1,102 +1,35 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 700 460" width="700" height="460" style="background-color: white; font-family: sans-serif;">
-  <line x1="233" y1="20" x2="233" y2="280" stroke="#D1D5DB" stroke-width="1"/>
-  <line x1="466" y1="20" x2="466" y2="280" stroke="#D1D5DB" stroke-width="1"/>
-  <line x1="20" y1="280" x2="680" y2="280" stroke="#9CA3AF" stroke-width="2"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 400" width="100%" height="100%" style="background-color: #0d1117; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
+  <style>
+    .title { font-size: 18px; font-weight: bold; fill: #58a6ff; text-anchor: middle; }
+    .col-title { font-size: 14px; font-weight: bold; fill: #ffffff; text-anchor: middle; }
+    .sub-text { font-size: 11px; fill: #8b949e; text-anchor: middle; }
+  </style>
 
-  <!-- TOP SECTION -->
-  <text x="116" y="40" font-size="16" font-weight="bold" text-anchor="middle" fill="#111827">MHA — full KV heads</text>
-  <text x="116" y="55" font-size="12" text-anchor="middle" fill="#4B5563">Highest memory</text>
-  
-  <text x="350" y="40" font-size="16" font-weight="bold" text-anchor="middle" fill="#111827">GQA — grouped KV</text>
-  <text x="350" y="55" font-size="12" text-anchor="middle" fill="#4B5563">Balanced</text>
-  
-  <text x="583" y="40" font-size="16" font-weight="bold" text-anchor="middle" fill="#111827">MQA — shared KV</text>
-  <text x="583" y="55" font-size="12" text-anchor="middle" fill="#4B5563">Lowest memory</text>
+  <rect width="100%" height="100%" fill="#0d1117"/>
+  <text x="450" y="35" class="title">Attention Head Comparison: MHA vs. GQA vs. MQA</text>
 
-  <!-- MHA Column -->
-  <g transform="translate(46, 80)">
-    <!-- Q Row -->
-    <rect x="0" y="0" width="30" height="30" fill="#FFEDD5" stroke="#F97316" stroke-width="2"/><text x="15" y="20" font-size="12" font-weight="bold" text-anchor="middle">Q1</text>
-    <rect x="35" y="0" width="30" height="30" fill="#FFEDD5" stroke="#F97316" stroke-width="2"/><text x="50" y="20" font-size="12" font-weight="bold" text-anchor="middle">Q2</text>
-    <rect x="70" y="0" width="30" height="30" fill="#FFEDD5" stroke="#F97316" stroke-width="2"/><text x="85" y="20" font-size="12" font-weight="bold" text-anchor="middle">Q3</text>
-    <rect x="105" y="0" width="30" height="30" fill="#FFEDD5" stroke="#F97316" stroke-width="2"/><text x="120" y="20" font-size="12" font-weight="bold" text-anchor="middle">Q4</text>
-    <!-- K Row -->
-    <rect x="0" y="60" width="30" height="30" fill="#DBEAFE" stroke="#3B82F6" stroke-width="2"/><text x="15" y="80" font-size="12" font-weight="bold" text-anchor="middle">K1</text>
-    <rect x="35" y="60" width="30" height="30" fill="#DBEAFE" stroke="#3B82F6" stroke-width="2"/><text x="50" y="80" font-size="12" font-weight="bold" text-anchor="middle">K2</text>
-    <rect x="70" y="60" width="30" height="30" fill="#DBEAFE" stroke="#3B82F6" stroke-width="2"/><text x="85" y="80" font-size="12" font-weight="bold" text-anchor="middle">K3</text>
-    <rect x="105" y="60" width="30" height="30" fill="#DBEAFE" stroke="#3B82F6" stroke-width="2"/><text x="120" y="80" font-size="12" font-weight="bold" text-anchor="middle">K4</text>
-    <!-- V Row -->
-    <rect x="0" y="120" width="30" height="30" fill="#DCFCE7" stroke="#22C55E" stroke-width="2"/><text x="15" y="140" font-size="12" font-weight="bold" text-anchor="middle">V1</text>
-    <rect x="35" y="120" width="30" height="30" fill="#DCFCE7" stroke="#22C55E" stroke-width="2"/><text x="50" y="140" font-size="12" font-weight="bold" text-anchor="middle">V2</text>
-    <rect x="70" y="120" width="30" height="30" fill="#DCFCE7" stroke="#22C55E" stroke-width="2"/><text x="85" y="140" font-size="12" font-weight="bold" text-anchor="middle">V3</text>
-    <rect x="105" y="120" width="30" height="30" fill="#DCFCE7" stroke="#22C55E" stroke-width="2"/><text x="120" y="140" font-size="12" font-weight="bold" text-anchor="middle">V4</text>
-    
-    <line x1="15" y1="30" x2="15" y2="60" stroke="#000" stroke-width="1"/>
-    <line x1="15" y1="90" x2="15" y2="120" stroke="#000" stroke-width="1"/>
-    <line x1="50" y1="30" x2="50" y2="60" stroke="#000" stroke-width="1"/>
-    <line x1="50" y1="90" x2="50" y2="120" stroke="#000" stroke-width="1"/>
-    <line x1="85" y1="30" x2="85" y2="60" stroke="#000" stroke-width="1"/>
-    <line x1="85" y1="90" x2="85" y2="120" stroke="#000" stroke-width="1"/>
-    <line x1="120" y1="30" x2="120" y2="60" stroke="#000" stroke-width="1"/>
-    <line x1="120" y1="90" x2="120" y2="120" stroke="#000" stroke-width="1"/>
-  </g>
+  <!-- MHA -->
+  <rect x="40" y="65" width="250" height="300" rx="8" fill="#161b22" stroke="#30363d"/>
+  <text x="165" y="95" class="col-title">Multi-Head (MHA)</text>
+  <text x="165" y="115" class="sub-text">GPT-2 / NanoBrain (1:1 Ratio)</text>
+  <text x="165" y="145" class="sub-text" style="fill:#58a6ff;">Queries (Q): 12 Heads</text>
+  <text x="165" y="165" class="sub-text" style="fill:#f1c40f;">Keys/Values (K/V): 12 Heads</text>
+  <text x="165" y="330" class="sub-text" style="fill:#f85149;">Full KV Cache VRAM Footprint</text>
 
-  <!-- GQA Column -->
-  <g transform="translate(282, 80)">
-    <rect x="0" y="0" width="30" height="30" fill="#FFEDD5" stroke="#F97316" stroke-width="2"/><text x="15" y="20" font-size="12" font-weight="bold" text-anchor="middle">Q1</text>
-    <rect x="35" y="0" width="30" height="30" fill="#FFEDD5" stroke="#F97316" stroke-width="2"/><text x="50" y="20" font-size="12" font-weight="bold" text-anchor="middle">Q2</text>
-    <rect x="70" y="0" width="30" height="30" fill="#FFEDD5" stroke="#F97316" stroke-width="2"/><text x="85" y="20" font-size="12" font-weight="bold" text-anchor="middle">Q3</text>
-    <rect x="105" y="0" width="30" height="30" fill="#FFEDD5" stroke="#F97316" stroke-width="2"/><text x="120" y="20" font-size="12" font-weight="bold" text-anchor="middle">Q4</text>
-    
-    <rect x="17.5" y="60" width="30" height="30" fill="#DBEAFE" stroke="#3B82F6" stroke-width="2"/><text x="32.5" y="80" font-size="12" font-weight="bold" text-anchor="middle">K1</text>
-    <rect x="87.5" y="60" width="30" height="30" fill="#DBEAFE" stroke="#3B82F6" stroke-width="2"/><text x="102.5" y="80" font-size="12" font-weight="bold" text-anchor="middle">K2</text>
-    
-    <rect x="17.5" y="120" width="30" height="30" fill="#DCFCE7" stroke="#22C55E" stroke-width="2"/><text x="32.5" y="140" font-size="12" font-weight="bold" text-anchor="middle">V1</text>
-    <rect x="87.5" y="120" width="30" height="30" fill="#DCFCE7" stroke="#22C55E" stroke-width="2"/><text x="102.5" y="140" font-size="12" font-weight="bold" text-anchor="middle">V2</text>
+  <!-- GQA -->
+  <rect x="325" y="65" width="250" height="300" rx="8" fill="#161b22" stroke="#3fb950" stroke-width="2"/>
+  <text x="450" y="95" class="col-title" style="fill:#3fb950;">Grouped-Query (GQA)</text>
+  <text x="450" y="115" class="sub-text">LLaMA 3 / Modern Standard</text>
+  <text x="450" y="145" class="sub-text" style="fill:#58a6ff;">Queries (Q): 4 Heads (per group)</text>
+  <text x="450" y="165" class="sub-text" style="fill:#f1c40f;">Keys/Values (K/V): 2 Shared Groups</text>
+  <text x="450" y="330" class="sub-text" style="fill:#7ee787; font-weight:bold;">Slashes KV Cache VRAM by 75%</text>
 
-    <line x1="15" y1="30" x2="32.5" y2="60" stroke="#000" stroke-width="1"/>
-    <line x1="50" y1="30" x2="32.5" y2="60" stroke="#000" stroke-width="1"/>
-    <line x1="32.5" y1="90" x2="32.5" y2="120" stroke="#000" stroke-width="1"/>
-
-    <line x1="85" y1="30" x2="102.5" y2="60" stroke="#000" stroke-width="1"/>
-    <line x1="120" y1="30" x2="102.5" y2="60" stroke="#000" stroke-width="1"/>
-    <line x1="102.5" y1="90" x2="102.5" y2="120" stroke="#000" stroke-width="1"/>
-  </g>
-
-  <!-- MQA Column -->
-  <g transform="translate(515, 80)">
-    <rect x="0" y="0" width="30" height="30" fill="#FFEDD5" stroke="#F97316" stroke-width="2"/><text x="15" y="20" font-size="12" font-weight="bold" text-anchor="middle">Q1</text>
-    <rect x="35" y="0" width="30" height="30" fill="#FFEDD5" stroke="#F97316" stroke-width="2"/><text x="50" y="20" font-size="12" font-weight="bold" text-anchor="middle">Q2</text>
-    <rect x="70" y="0" width="30" height="30" fill="#FFEDD5" stroke="#F97316" stroke-width="2"/><text x="85" y="20" font-size="12" font-weight="bold" text-anchor="middle">Q3</text>
-    <rect x="105" y="0" width="30" height="30" fill="#FFEDD5" stroke="#F97316" stroke-width="2"/><text x="120" y="20" font-size="12" font-weight="bold" text-anchor="middle">Q4</text>
-    
-    <rect x="52.5" y="60" width="30" height="30" fill="#DBEAFE" stroke="#3B82F6" stroke-width="2"/><text x="67.5" y="80" font-size="12" font-weight="bold" text-anchor="middle">K</text>
-    
-    <rect x="52.5" y="120" width="30" height="30" fill="#DCFCE7" stroke="#22C55E" stroke-width="2"/><text x="67.5" y="140" font-size="12" font-weight="bold" text-anchor="middle">V</text>
-
-    <line x1="15" y1="30" x2="67.5" y2="60" stroke="#000" stroke-width="1"/>
-    <line x1="50" y1="30" x2="67.5" y2="60" stroke="#000" stroke-width="1"/>
-    <line x1="85" y1="30" x2="67.5" y2="60" stroke="#000" stroke-width="1"/>
-    <line x1="120" y1="30" x2="67.5" y2="60" stroke="#000" stroke-width="1"/>
-    
-    <line x1="67.5" y1="90" x2="67.5" y2="120" stroke="#000" stroke-width="1"/>
-  </g>
-
-  <!-- BOTTOM SECTION -->
-  <g transform="translate(150, 310)">
-    <line x1="40" y1="100" x2="400" y2="100" stroke="#111827" stroke-width="2"/>
-    <line x1="40" y1="0" x2="40" y2="100" stroke="#111827" stroke-width="2"/>
-    <text x="30" y="50" font-size="12" text-anchor="middle" font-weight="bold" fill="#111827" transform="rotate(-90 30 50)">KV Cache VRAM (relative)</text>
-    
-    <rect x="80" y="0" width="60" height="100" fill="#EF4444"/>
-    <text x="110" y="115" font-size="12" font-weight="bold" text-anchor="middle">MHA</text>
-    
-    <rect x="180" y="67" width="60" height="33" fill="#F97316"/>
-    <text x="210" y="115" font-size="12" font-weight="bold" text-anchor="middle">GQA</text>
-    
-    <rect x="280" y="83" width="60" height="17" fill="#22C55E"/>
-    <text x="310" y="115" font-size="12" font-weight="bold" text-anchor="middle">MQA</text>
-  </g>
-  <text x="350" y="450" font-size="12" text-anchor="middle" fill="#111827">GQA reduces KV cache ~75% vs MHA with near-equivalent quality</text>
+  <!-- MQA -->
+  <rect x="610" y="65" width="250" height="300" rx="8" fill="#161b22" stroke="#30363d"/>
+  <text x="735" y="95" class="col-title">Multi-Query (MQA)</text>
+  <text x="735" y="115" class="sub-text">Falcon / Chat Models</text>
+  <text x="735" y="145" class="sub-text" style="fill:#58a6ff;">Queries (Q): 12 Heads</text>
+  <text x="735" y="165" class="sub-text" style="fill:#f1c40f;">Keys/Values (K/V): 1 Single Head</text>
+  <text x="735" y="330" class="sub-text" style="fill:#e67e22;">Ultra-low Memory (Quality Risk)</text>
 
 </svg>

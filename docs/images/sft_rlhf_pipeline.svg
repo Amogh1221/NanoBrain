@@ -1,48 +1,60 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 820 380" width="820" height="380" style="background-color: white; font-family: sans-serif;">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 380" width="100%" height="100%" style="background-color: #0d1117; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
+  <style>
+    .title { font-size: 18px; font-weight: bold; fill: #58a6ff; text-anchor: middle; }
+    .box-title { font-size: 13px; font-weight: bold; fill: #ffffff; text-anchor: middle; }
+    .sub-text { font-size: 11px; fill: #8b949e; text-anchor: middle; }
+    .arrow { stroke: #58a6ff; stroke-width: 2; marker-end: url(#arrowhead); }
+  </style>
+
   <defs>
-    <marker id="arrow_b" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#000000"/></marker>
-    <marker id="arrow_p" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#9333EA"/></marker>
+    <marker id="arrowhead" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+      <polygon points="0 0, 8 3, 0 6" fill="#58a6ff" />
+    </marker>
   </defs>
 
-  <!-- Stage 1 -->
-  <rect x="30" y="140" width="160" height="100" rx="10" fill="#F3F4F6" stroke="#374151" stroke-width="2"/>
-  <text x="110" y="165" font-size="13" font-weight="bold" text-anchor="middle" fill="#111827">Pretrained Base LLM</text>
-  <text x="110" y="180" font-size="11" text-anchor="middle" fill="#4B5563">Next-token prediction only</text>
-  <text x="40" y="205" font-size="10" fill="#111827">In:  'Capital of France?'</text>
-  <text x="40" y="220" font-size="10" fill="#111827">Out: 'The city of Paris was...'</text>
+  <rect width="100%" height="100%" fill="#0d1117"/>
+  <text x="450" y="35" class="title">Post-Pretraining Alignment Pipeline (Pretraining → SFT → RLHF / DPO)</text>
 
-  <line x1="190" y1="190" x2="255" y2="190" stroke="#000" stroke-width="2" marker-end="url(#arrow_b)"/>
-  <text x="225" y="180" font-size="11" text-anchor="middle" font-weight="bold" fill="#111827">Supervised Fine-Tuning (SFT)</text>
+  <!-- Stage 1: Pretrained LLM -->
+  <rect x="40" y="80" width="170" height="220" rx="10" fill="#161b22" stroke="#30363d" stroke-width="1.5"/>
+  <text x="125" y="110" class="box-title" style="fill:#58a6ff;">1. Base Pretrained Model</text>
+  <text x="125" y="135" class="sub-text">NanoBrain Base Checkpoint</text>
+  <text x="125" y="165" class="sub-text" style="fill:#c9d1d9;">Task: Raw text completion</text>
+  <text x="125" y="195" class="sub-text" style="fill:#8b949e;">Example Prompt:</text>
+  <text x="125" y="215" class="sub-text" style="fill:#f1c40f;">"The capital of France is"</text>
+  <text x="125" y="235" class="sub-text" style="fill:#8b949e;">Completion:</text>
+  <text x="125" y="255" class="sub-text" style="fill:#7ee787;">"Paris, which is known..."</text>
 
-  <!-- Stage 2 -->
-  <rect x="260" y="140" width="150" height="100" rx="10" fill="#DBEAFE" stroke="#374151" stroke-width="2"/>
-  <text x="335" y="165" font-size="13" font-weight="bold" text-anchor="middle" fill="#111827">SFT Model</text>
-  <text x="335" y="180" font-size="11" text-anchor="middle" fill="#4B5563">Follows instructions</text>
-  <text x="270" y="205" font-size="10" fill="#111827">In:  'Capital of France?'</text>
-  <text x="270" y="220" font-size="10" fill="#111827">Out: 'Paris.'</text>
+  <line x1="210" y1="190" x2="250" y2="190" class="arrow"/>
 
-  <line x1="410" y1="190" x2="475" y2="190" stroke="#000" stroke-width="2" marker-end="url(#arrow_b)"/>
-  <text x="445" y="180" font-size="11" text-anchor="middle" font-weight="bold" fill="#111827">Human preference data</text>
+  <!-- Stage 2: SFT -->
+  <rect x="265" y="80" width="170" height="220" rx="10" fill="#161b22" stroke="#388bfd" stroke-width="1.5"/>
+  <text x="350" y="110" class="box-title" style="fill:#388bfd;">2. Supervised Fine-Tuning</text>
+  <text x="350" y="135" class="sub-text">Instruction Dataset Pairs</text>
+  <text x="350" y="165" class="sub-text" style="fill:#c9d1d9;">Task: Q&amp;A Chat format</text>
+  <text x="350" y="195" class="sub-text" style="fill:#8b949e;">Instruction Prompt:</text>
+  <text x="350" y="215" class="sub-text" style="fill:#f1c40f;">"User: What is Paris?"</text>
+  <text x="350" y="235" class="sub-text" style="fill:#8b949e;">Target Output:</text>
+  <text x="350" y="255" class="sub-text" style="fill:#7ee787;">"Assistant: Paris is..."</text>
 
-  <!-- Stage 3 -->
-  <rect x="480" y="140" width="150" height="100" rx="10" fill="#FEF3C7" stroke="#374151" stroke-width="2"/>
-  <text x="555" y="165" font-size="13" font-weight="bold" text-anchor="middle" fill="#111827">Reward Model</text>
-  <text x="555" y="180" font-size="11" text-anchor="middle" fill="#4B5563">Scores responses</text>
-  <text x="490" y="205" font-size="10" fill="#111827">'Paris.' → 9.2</text>
-  <text x="490" y="220" font-size="10" fill="#111827">'The city of...' → 3.1</text>
+  <line x1="435" y1="190" x2="475" y2="190" class="arrow"/>
 
-  <line x1="630" y1="190" x2="685" y2="190" stroke="#000" stroke-width="2" marker-end="url(#arrow_b)"/>
-  <text x="660" y="180" font-size="11" text-anchor="middle" font-weight="bold" fill="#111827">PPO Optimization</text>
+  <!-- Stage 3: RLHF / DPO Alignment -->
+  <rect x="490" y="80" width="170" height="220" rx="10" fill="#161b22" stroke="#f59e0b" stroke-width="1.5"/>
+  <text x="575" y="110" class="box-title" style="fill:#f59e0b;">3. RLHF / DPO Alignment</text>
+  <text x="575" y="135" class="sub-text">Human Preference Optimization</text>
+  <text x="575" y="165" class="sub-text" style="fill:#c9d1d9;">Pairs: Chosen vs Rejected</text>
+  <text x="575" y="195" class="sub-text" style="fill:#7ee787;">✓ Chosen: Helpful/Safe</text>
+  <text x="575" y="225" class="sub-text" style="fill:#ff7b72;">✗ Rejected: Harmful/Vague</text>
+  <text x="575" y="260" class="sub-text" style="fill:#f1c40f;">Loss: DPO / PPO Reward</text>
 
-  <!-- Stage 4 -->
-  <rect x="690" y="140" width="115" height="100" rx="10" fill="#DCFCE7" stroke="#374151" stroke-width="2"/>
-  <text x="747" y="165" font-size="13" font-weight="bold" text-anchor="middle" fill="#111827">Aligned Assistant</text>
-  <text x="747" y="180" font-size="11" text-anchor="middle" fill="#4B5563">Helpful + Harmless</text>
-  <text x="700" y="205" font-size="10" fill="#111827">In:  'Capital of France?'</text>
-  <text x="700" y="220" font-size="10" fill="#111827">Out: 'Paris! Anything else?'</text>
+  <line x1="660" y1="190" x2="700" y2="190" class="arrow"/>
 
-  <!-- DPO Shortcut -->
-  <path d="M 335 240 C 335 320, 747 320, 747 245" fill="none" stroke="#9333EA" stroke-width="2" stroke-dasharray="5,5" marker-end="url(#arrow_p)"/>
-  <text x="541" y="310" font-size="12" text-anchor="middle" font-weight="bold" fill="#9333EA">DPO: skip reward model</text>
+  <!-- Stage 4: Production Chatbot -->
+  <rect x="715" y="80" width="150" height="220" rx="10" fill="#238636" stroke="#3fb950" stroke-width="2"/>
+  <text x="790" y="110" class="box-title" style="fill:#ffffff;">4. Aligned Chatbot</text>
+  <text x="790" y="135" class="sub-text" style="fill:#e6ffec;">Production Ready</text>
+  <text x="790" y="180" class="sub-text" style="fill:#ffffff; font-weight:bold;">ChatGPT / Claude</text>
+  <text x="790" y="210" class="sub-text" style="fill:#e6ffec;">Helpful, Honest &amp; Harmless</text>
 
 </svg>
