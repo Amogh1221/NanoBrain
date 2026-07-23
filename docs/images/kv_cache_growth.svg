@@ -1,59 +1,67 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 750 420" width="100%" height="100%" style="background-color: #0d1117; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
-  <style>
-    .title { font-size: 18px; font-weight: bold; fill: #58a6ff; text-anchor: middle; }
-    .box-title { font-size: 13px; font-weight: bold; fill: #ffffff; text-anchor: middle; }
-    .sub-text { font-size: 11px; fill: #8b949e; text-anchor: middle; }
-  </style>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 660 420" width="660" height="420" style="background-color: white; font-family: sans-serif;">
+  <!-- Gridlines -->
+  <line x1="80" y1="60" x2="620" y2="60" stroke="#E5E7EB" stroke-width="1"/>
+  <text x="70" y="64" font-size="11" text-anchor="end" fill="#6B7280">1600</text>
+  <line x1="80" y1="130" x2="620" y2="130" stroke="#E5E7EB" stroke-width="1"/>
+  <text x="70" y="134" font-size="11" text-anchor="end" fill="#6B7280">1200</text>
+  <line x1="80" y1="200" x2="620" y2="200" stroke="#E5E7EB" stroke-width="1"/>
+  <text x="70" y="204" font-size="11" text-anchor="end" fill="#6B7280">800</text>
+  <line x1="80" y1="270" x2="620" y2="270" stroke="#E5E7EB" stroke-width="1"/>
+  <text x="70" y="274" font-size="11" text-anchor="end" fill="#6B7280">400</text>
+  
+  <line x1="80" y1="340" x2="620" y2="340" stroke="#374151" stroke-width="2"/>
+  <line x1="80" y1="60" x2="80" y2="340" stroke="#374151" stroke-width="2"/>
+  
+  <!-- Labels -->
+  <text x="350" y="380" font-size="13" font-weight="bold" text-anchor="middle" fill="#111827">Context Length T (tokens)</text>
+  <text x="30" y="200" font-size="13" font-weight="bold" text-anchor="middle" fill="#111827" transform="rotate(-90 30 200)">KV Cache Memory (MB)</text>
 
-  <rect width="100%" height="100%" fill="#0d1117"/>
-  <text x="375" y="35" class="title">KV Cache Memory Growth vs. Context Length T</text>
+  <!-- Red Limit Line -->
+  <line x1="80" y1="75" x2="620" y2="75" stroke="#EF4444" stroke-width="2" stroke-dasharray="5,5"/>
+  <text x="350" y="70" font-size="11" text-anchor="middle" fill="#EF4444">~GPU VRAM limit (model weights already use most VRAM)</text>
 
-  <!-- Grid Bars -->
-  <g transform="translate(100, 70)">
-    <!-- Y Axis -->
-    <line x1="0" y1="0" x2="0" y2="260" stroke="#30363d" stroke-width="2"/>
-    <line x1="0" y1="260" x2="580" y2="260" stroke="#30363d" stroke-width="2"/>
+  <!-- Bars (Max H = 280 (1600MB)) -->
+  <!-- T=256 (X=140) -->
+  <text x="140" y="355" font-size="11" text-anchor="middle" fill="#111827">256</text>
+  <rect x="120" y="338" width="12" height="2" fill="#3B82F6"/> <!-- MHA: 6MB = 1px -->
+  <rect x="134" y="339.5" width="12" height="0.5" fill="#F97316"/>
+  <rect x="148" y="339.8" width="12" height="0.2" fill="#22C55E"/>
 
-    <!-- Y Ticks -->
-    <text x="-15" y="265" class="sub-text">0 MB</text>
-    <text x="-15" y="200" class="sub-text">100 MB</text>
-    <text x="-15" y="135" class="sub-text">200 MB</text>
-    <text x="-15" y="70" class="sub-text">300 MB</text>
-    <text x="-15" y="10" class="sub-text">400 MB</text>
+  <!-- T=512 (X=240) -->
+  <text x="240" y="355" font-size="11" text-anchor="middle" fill="#111827">512</text>
+  <rect x="220" y="337" width="12" height="3" fill="#3B82F6"/> <!-- MHA: 12MB = 2px -->
+  <rect x="234" y="339" width="12" height="1" fill="#F97316"/>
+  <rect x="248" y="339.5" width="12" height="0.5" fill="#22C55E"/>
 
-    <!-- Bars T = 256, 512, 1024, 2048, 4096 -->
-    <!-- MHA (Blue), GQA (Green) -->
-    <!-- T=256: MHA 24MB, GQA 6MB -->
-    <rect x="40" y="244" width="25" height="16" fill="#1f6feb"/>
-    <rect x="70" y="256" width="25" height="4" fill="#238636"/>
-    <text x="65" y="280" class="sub-text">T=256</text>
+  <!-- T=1024 (X=340) -->
+  <text x="340" y="355" font-size="11" text-anchor="middle" fill="#111827">1024</text>
+  <rect x="320" y="335" width="12" height="5" fill="#3B82F6"/> <!-- MHA: 24MB = 4px -->
+  <rect x="334" y="339" width="12" height="1" fill="#F97316"/>
+  <rect x="348" y="339.5" width="12" height="0.5" fill="#22C55E"/>
 
-    <!-- T=512: MHA 48MB, GQA 12MB -->
-    <rect x="150" y="228" width="25" height="32" fill="#1f6feb"/>
-    <rect x="180" y="252" width="25" height="8" fill="#238636"/>
-    <text x="175" y="280" class="sub-text">T=512</text>
+  <!-- T=2048 (X=440) -->
+  <text x="440" y="355" font-size="11" text-anchor="middle" fill="#111827">2048</text>
+  <rect x="420" y="331" width="12" height="9" fill="#3B82F6"/> <!-- MHA: 48MB = 8px -->
+  <rect x="434" y="338" width="12" height="2" fill="#F97316"/>
+  <rect x="448" y="339" width="12" height="1" fill="#22C55E"/>
 
-    <!-- T=1024: MHA 96MB, GQA 24MB -->
-    <rect x="260" y="196" width="25" height="64" fill="#1f6feb"/>
-    <rect x="290" y="244" width="25" height="16" fill="#238636"/>
-    <text x="285" y="280" class="sub-text">T=1024</text>
+  <!-- T=4096 (X=540) -->
+  <text x="540" y="355" font-size="11" text-anchor="middle" fill="#111827">4096</text>
+  <rect x="520" y="323" width="12" height="17" fill="#3B82F6"/> <!-- MHA: 96MB = 17px -->
+  <rect x="534" y="337" width="12" height="3" fill="#F97316"/>
+  <rect x="548" y="338.5" width="12" height="1.5" fill="#22C55E"/>
 
-    <!-- T=2048: MHA 192MB, GQA 48MB -->
-    <rect x="370" y="132" width="25" height="128" fill="#1f6feb"/>
-    <rect x="400" y="228" width="25" height="32" fill="#238636"/>
-    <text x="395" y="280" class="sub-text">T=2048</text>
-
-    <!-- T=4096: MHA 384MB, GQA 96MB -->
-    <rect x="480" y="4" width="25" height="256" fill="#1f6feb"/>
-    <rect x="510" y="196" width="25" height="64" fill="#238636"/>
-    <text x="505" y="280" class="sub-text">T=4096</text>
-  </g>
+  <!-- Formula note -->
+  <text x="350" y="400" font-size="10" text-anchor="middle" fill="#4B5563">Memory = 2 × B × n_layers × n_heads × d_k × T × 2 bytes (FP16)</text>
+  <text x="350" y="415" font-size="10" text-anchor="middle" fill="#4B5563">NanoBrain B=1: T=1024 → 24MB  |  T=4096, B=16 → 1,536MB</text>
 
   <!-- Legend -->
-  <rect x="200" y="370" width="18" height="12" fill="#1f6feb"/>
-  <text x="225" y="381" class="sub-text" style="fill:#79c0ff; font-weight:bold;">MHA (12 KV Heads - NanoBrain)</text>
-
-  <rect x="460" y="370" width="18" height="12" fill="#238636"/>
-  <text x="485" y="381" class="sub-text" style="fill:#7ee787; font-weight:bold;">GQA (2 KV Groups - LLaMA 3)</text>
+  <rect x="90" y="20" width="150" height="60" rx="5" fill="#F3F4F6" stroke="#9CA3AF" stroke-width="1"/>
+  <rect x="100" y="30" width="10" height="10" fill="#3B82F6"/>
+  <text x="115" y="39" font-size="10" fill="#111827">MHA (n_kv_heads=12)</text>
+  <rect x="100" y="45" width="10" height="10" fill="#F97316"/>
+  <text x="115" y="54" font-size="10" fill="#111827">GQA (n_kv_heads=2)</text>
+  <rect x="100" y="60" width="10" height="10" fill="#22C55E"/>
+  <text x="115" y="69" font-size="10" fill="#111827">MQA (n_kv_heads=1)</text>
 
 </svg>

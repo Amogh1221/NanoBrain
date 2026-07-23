@@ -1,132 +1,95 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 850" width="100%" height="100%" style="background-color: #0d1117; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
-  <style>
-    .title { font-size: 20px; font-weight: bold; fill: #c9d1d9; text-anchor: middle; }
-    .box-text { font-size: 14px; text-anchor: middle; font-weight: 600; }
-    .box-text-dark { font-size: 14px; text-anchor: middle; font-weight: 600; fill: #000000; }
-    .box-text-light { font-size: 14px; text-anchor: middle; font-weight: 600; fill: #ffffff; }
-    .sub-text { font-size: 12px; fill: #8b949e; text-anchor: middle; }
-    .arrow { stroke: #c9d1d9; stroke-width: 2; fill: none; marker-end: url(#arrowhead); }
-    .dashed-arrow { stroke: #8b949e; stroke-width: 2; fill: none; stroke-dasharray: 5,5; marker-end: url(#arrowhead-grey); }
-    .line { stroke: #c9d1d9; stroke-width: 2; fill: none; }
-    .box { stroke-width: 1.5; rx: 6; }
-    .add-circle { fill: #0d1117; stroke: #c9d1d9; stroke-width: 2; }
-  </style>
-
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 720" width="320" height="720" style="background-color: white; font-family: sans-serif;">
   <defs>
-    <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
-      <polygon points="0 0, 10 3.5, 0 7" fill="#c9d1d9" />
-    </marker>
-    <marker id="arrowhead-grey" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
-      <polygon points="0 0, 10 3.5, 0 7" fill="#8b949e" />
-    </marker>
+    <marker id="arrow_black" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#000000"/></marker>
   </defs>
 
-  <text x="250" y="30" class="title">GPT-2 Decoder Block Architecture</text>
+  <g transform="translate(20, 0)">
+    <!-- Box 1 -->
+    <rect x="0" y="660" width="280" height="50" rx="5" fill="#F3F4F6" stroke="#374151" stroke-width="2"/>
+    <text x="140" y="680" font-size="14" font-weight="bold" text-anchor="middle" fill="#111827">Input Token IDs</text>
+    <text x="140" y="700" font-size="12" text-anchor="middle" fill="#111827">[x1, x2, …, xT]</text>
 
-  <!-- Output Probabilities -->
-  <text x="250" y="60" class="box-text-light">Output Probabilities</text>
-  
-  <!-- Softmax -->
-  <rect x="170" y="80" width="160" height="40" fill="#2ea043" stroke="#3fb950" class="box"/>
-  <text x="250" y="105" class="box-text-light">Softmax</text>
+    <!-- Arrow Up -->
+    <line x1="140" y1="660" x2="140" y2="610" stroke="#000" stroke-width="2" marker-end="url(#arrow_black)"/>
+    <text x="150" y="640" font-size="12" font-weight="bold" fill="#111827">Lookup</text>
 
-  <!-- Linear -->
-  <rect x="170" y="150" width="160" height="40" fill="#21262d" stroke="#30363d" class="box"/>
-  <text x="250" y="175" class="box-text-light">Linear</text>
+    <!-- Box 2 (Split) -->
+    <rect x="0" y="550" width="125" height="50" rx="5" fill="#DBEAFE" stroke="#3B82F6" stroke-width="2"/>
+    <text x="62" y="580" font-size="11" font-weight="bold" text-anchor="middle" fill="#111827">Token Embedding W_te</text>
+    
+    <text x="140" y="580" font-size="20" font-weight="bold" text-anchor="middle" fill="#111827">+</text>
+    
+    <rect x="155" y="550" width="125" height="50" rx="5" fill="#EDE9FE" stroke="#8B5CF6" stroke-width="2"/>
+    <text x="217" y="580" font-size="11" font-weight="bold" text-anchor="middle" fill="#111827">Pos. Embedding W_pe</text>
 
-  <!-- LayerNorm -->
-  <rect x="170" y="220" width="160" height="40" fill="#e3b341" stroke="#d4a338" class="box"/>
-  <text x="250" y="245" class="box-text-dark">LayerNorm</text>
+    <!-- Arrow Up -->
+    <line x1="140" y1="550" x2="140" y2="520" stroke="#000" stroke-width="2" marker-end="url(#arrow_black)"/>
 
-  <!-- Transformer Block Background -->
-  <rect x="70" y="290" width="360" height="420" fill="#161b22" stroke="#30363d" stroke-width="2" rx="10"/>
-  <text x="420" y="315" class="sub-text" style="font-weight:bold; fill:#c9d1d9; text-anchor:end;">Transformer Block ×12</text>
+    <!-- Box 3 (Transformer Block) -->
+    <rect x="0" y="270" width="280" height="240" rx="10" fill="#CCFBF1" stroke="#0D9488" stroke-width="3"/>
+    <text x="140" y="295" font-size="16" font-weight="bold" text-anchor="middle" fill="#111827">Transformer Block</text>
 
-  <!-- Inside Block -->
-  
-  <!-- Add & Norm 2 -->
-  <circle cx="250" cy="330" r="15" class="add-circle"/>
-  <line x1="242" y1="330" x2="258" y2="330" class="line"/>
-  <line x1="250" y1="322" x2="250" y2="338" class="line"/>
+    <!-- Sub A -->
+    <rect x="20" y="320" width="40" height="40" rx="5" fill="#fff" stroke="#0D9488" stroke-width="2"/>
+    <text x="40" y="345" font-size="12" font-weight="bold" text-anchor="middle">LN</text>
+    
+    <line x1="60" y1="340" x2="80" y2="340" stroke="#000" stroke-width="2" marker-end="url(#arrow_black)"/>
+    
+    <rect x="80" y="320" width="140" height="40" rx="5" fill="#fff" stroke="#0D9488" stroke-width="2"/>
+    <text x="150" y="345" font-size="12" font-weight="bold" text-anchor="middle">Causal Self-Attention</text>
+    
+    <line x1="220" y1="340" x2="240" y2="340" stroke="#000" stroke-width="2" marker-end="url(#arrow_black)"/>
+    
+    <circle cx="255" cy="340" r="15" fill="#fff" stroke="#0D9488" stroke-width="2"/>
+    <text x="255" y="345" font-size="14" font-weight="bold" text-anchor="middle">⊕</text>
+    
+    <!-- Residual A -->
+    <path d="M 140 520 L 140 510 L 290 510 L 290 340 L 270 340" fill="none" stroke="#000" stroke-width="2" marker-end="url(#arrow_black)"/>
+    <line x1="140" y1="510" x2="140" y2="360" stroke="#000" stroke-width="2" marker-end="url(#arrow_black)"/>
+    
+    <line x1="255" y1="325" x2="255" y2="295" stroke="#000" stroke-width="2"/>
 
-  <!-- Feed Forward -->
-  <rect x="160" y="375" width="180" height="40" fill="#1f6feb" stroke="#388bfd" class="box"/>
-  <text x="250" y="400" class="box-text-light">Feed Forward</text>
+    <!-- Sub B -->
+    <rect x="20" y="420" width="40" height="40" rx="5" fill="#fff" stroke="#0D9488" stroke-width="2"/>
+    <text x="40" y="445" font-size="12" font-weight="bold" text-anchor="middle">LN</text>
+    
+    <line x1="60" y1="440" x2="80" y2="440" stroke="#000" stroke-width="2" marker-end="url(#arrow_black)"/>
+    
+    <rect x="80" y="420" width="140" height="40" rx="5" fill="#fff" stroke="#0D9488" stroke-width="2"/>
+    <text x="150" y="445" font-size="12" font-weight="bold" text-anchor="middle">MLP (4× expand)</text>
+    
+    <line x1="220" y1="440" x2="240" y2="440" stroke="#000" stroke-width="2" marker-end="url(#arrow_black)"/>
+    
+    <circle cx="255" cy="440" r="15" fill="#fff" stroke="#0D9488" stroke-width="2"/>
+    <text x="255" y="445" font-size="14" font-weight="bold" text-anchor="middle">⊕</text>
+    
+    <!-- Residual B -->
+    <path d="M 255 360 L 255 380 L 290 380 L 290 440 L 270 440" fill="none" stroke="#000" stroke-width="2" marker-end="url(#arrow_black)"/>
+    <line x1="255" y1="360" x2="255" y2="420" stroke="#000" stroke-width="2" marker-end="url(#arrow_black)"/>
 
-  <!-- LayerNorm 2 -->
-  <rect x="170" y="445" width="160" height="40" fill="#e3b341" stroke="#d4a338" class="box"/>
-  <text x="250" y="470" class="box-text-dark">LayerNorm</text>
+    <line x1="255" y1="455" x2="255" y2="500" stroke="#000" stroke-width="2"/>
 
-  <!-- Add & Norm 1 -->
-  <circle cx="250" cy="530" r="15" class="add-circle"/>
-  <line x1="242" y1="530" x2="258" y2="530" class="line"/>
-  <line x1="250" y1="522" x2="250" y2="538" class="line"/>
+    <!-- Curly Brace -->
+    <path d="M 285 270 Q 295 270 295 390 T 305 390 Q 295 390 295 510 T 285 510" fill="none" stroke="#111827" stroke-width="2"/>
+    <text x="315" y="395" font-size="16" font-weight="bold" fill="#111827">× 12</text>
 
-  <!-- Masked Multi-Head Attention -->
-  <rect x="130" y="575" width="240" height="40" fill="#d97706" stroke="#f59e0b" class="box"/>
-  <text x="250" y="600" class="box-text-light">Masked Multi-Head Attention</text>
+    <!-- Arrow Up -->
+    <line x1="140" y1="270" x2="140" y2="230" stroke="#000" stroke-width="2" marker-end="url(#arrow_black)"/>
 
-  <!-- LayerNorm 1 -->
-  <rect x="170" y="645" width="160" height="40" fill="#e3b341" stroke="#d4a338" class="box"/>
-  <text x="250" y="670" class="box-text-dark">LayerNorm</text>
+    <!-- Box 4 -->
+    <rect x="0" y="180" width="280" height="50" rx="5" fill="#F3F4F6" stroke="#374151" stroke-width="2"/>
+    <text x="140" y="210" font-size="14" font-weight="bold" text-anchor="middle" fill="#111827">Final LayerNorm  ln_f</text>
 
-  <!-- Embedding -->
-  <rect x="120" y="730" width="260" height="40" fill="#d2a8ff" stroke="#bc8cff" class="box"/>
-  <text x="250" y="755" class="box-text-dark">Token &amp; Positional Embedding</text>
+    <!-- Arrow Up -->
+    <line x1="140" y1="180" x2="140" y2="140" stroke="#000" stroke-width="2" marker-end="url(#arrow_black)"/>
 
-  <!-- Input -->
-  <text x="250" y="820" class="box-text-light">Inputs</text>
+    <!-- Box 5 -->
+    <rect x="0" y="70" width="280" height="70" rx="5" fill="#DCFCE7" stroke="#16A34A" stroke-width="2"/>
+    <text x="140" y="100" font-size="16" font-weight="bold" text-anchor="middle" fill="#111827">Output Logits</text>
+    <text x="140" y="120" font-size="14" text-anchor="middle" fill="#111827">(vocab = 50,258)</text>
 
-  <!-- Connecting Lines -->
-  <!-- Input to Embedding -->
-  <line x1="250" y1="800" x2="250" y2="770" class="arrow"/>
-  
-  <!-- Embedding to Split -->
-  <line x1="250" y1="730" x2="250" y2="700" class="line"/>
-  
-  <!-- Split to Residual 1 -->
-  <circle cx="250" cy="700" r="4" fill="#c9d1d9"/>
-  <path d="M 250 700 L 100 700 L 100 530 L 235 530" class="arrow"/>
-  
-  <!-- Split to LayerNorm 1 -->
-  <line x1="250" y1="700" x2="250" y2="685" class="arrow"/>
-  
-  <!-- LayerNorm 1 to Attention -->
-  <line x1="250" y1="645" x2="250" y2="615" class="arrow"/>
-  
-  <!-- Attention to Add 1 -->
-  <line x1="250" y1="575" x2="250" y2="545" class="arrow"/>
-
-  <!-- Add 1 to Split 2 -->
-  <line x1="250" y1="515" x2="250" y2="500" class="line"/>
-  
-  <!-- Split to Residual 2 -->
-  <circle cx="250" cy="500" r="4" fill="#c9d1d9"/>
-  <path d="M 250 500 L 100 500 L 100 330 L 235 330" class="arrow"/>
-
-  <!-- Split 2 to LayerNorm 2 -->
-  <line x1="250" y1="500" x2="250" y2="485" class="arrow"/>
-
-  <!-- LayerNorm 2 to FF -->
-  <line x1="250" y1="445" x2="250" y2="415" class="arrow"/>
-  
-  <!-- FF to Add 2 -->
-  <line x1="250" y1="375" x2="250" y2="345" class="arrow"/>
-  
-  <!-- Add 2 to Output (LayerNorm Final) -->
-  <line x1="250" y1="315" x2="250" y2="260" class="arrow"/>
-  
-  <!-- Final LayerNorm to Linear -->
-  <line x1="250" y1="220" x2="250" y2="190" class="arrow"/>
-  
-  <!-- Linear to Softmax -->
-  <line x1="250" y1="150" x2="250" y2="120" class="arrow"/>
-  
-  <!-- Softmax to Probabilities -->
-  <line x1="250" y1="80" x2="250" y2="65" class="arrow"/>
-
-  <!-- Weight Tying Line -->
-  <path d="M 380 750 L 440 750 L 440 170 L 330 170" class="dashed-arrow"/>
-  <text x="450" y="460" class="sub-text" style="transform: rotate(-90deg); transform-origin: 450px 460px;">Weight Tying: lm_head.weight = W_te</text>
-  
+    <!-- Weight Tying Line -->
+    <path d="M 0 105 L -10 105 L -10 575 L 0 575" fill="none" stroke="#4B5563" stroke-width="2" stroke-dasharray="5,5" marker-end="url(#arrow_black)"/>
+    <text x="-15" y="350" font-size="12" font-weight="bold" fill="#4B5563" transform="rotate(-90 -15 350)" text-anchor="middle">Weight Tying: lm_head.weight = W_te</text>
+  </g>
 </svg>

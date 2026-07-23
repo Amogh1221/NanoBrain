@@ -1,91 +1,94 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 480" width="100%" height="100%" style="background-color: #0d1117; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
-  <style>
-    .title { font-size: 20px; font-weight: bold; fill: #58a6ff; text-anchor: middle; }
-    .box-title { font-size: 15px; font-weight: bold; fill: #ffffff; text-anchor: middle; }
-    .box-text { font-size: 12px; fill: #c9d1d9; text-anchor: middle; }
-    .sub-text { font-size: 11px; fill: #8b949e; text-anchor: middle; }
-    .arrow { stroke: #58a6ff; stroke-width: 2; marker-end: url(#arrowhead); }
-    .cross { stroke: #f85149; stroke-width: 4; }
-  </style>
-
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 700 500" width="700" height="500" style="background-color: white; font-family: sans-serif;">
   <defs>
-    <marker id="arrowhead" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
-      <polygon points="0 0, 8 3, 0 6" fill="#58a6ff" />
-    </marker>
-    <linearGradient id="grad-sram" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#238636" />
-      <stop offset="100%" stop-color="#161b22" />
-    </linearGradient>
+    <marker id="arrow_black" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#000000"/></marker>
   </defs>
 
-  <text x="450" y="30" class="title">FlashAttention: Fusing Softmax to Avoid O(N²) HBM Read/Writes</text>
+  <!-- TOP ROW -->
+  <text x="20" y="50" font-size="16" font-weight="bold" fill="#DC2626">Standard Attention</text>
+  
+  <rect x="20" y="70" width="90" height="40" rx="5" fill="#F3F4F6" stroke="#374151" stroke-width="2"/>
+  <text x="65" y="95" font-size="12" font-weight="bold" text-anchor="middle" fill="#111827">Q,K,V in HBM</text>
+  
+  <line x1="110" y1="90" x2="160" y2="90" stroke="#000" stroke-width="2" marker-end="url(#arrow_black)"/>
+  <text x="135" y="85" font-size="10" font-style="italic" fill="#EA580C" text-anchor="middle">HBM read</text>
 
-  <!-- Left Side: Standard Attention (O(N^2)) -->
-  <rect x="40" y="80" width="380" height="350" rx="10" fill="#161b22" stroke="#30363d" stroke-width="2"/>
-  <text x="230" y="110" class="box-title" style="fill:#f85149;">Standard Attention (Memory Bottleneck)</text>
-  
-  <rect x="130" y="150" width="200" height="200" rx="8" fill="#21262d" stroke="#30363d"/>
-  
-  <!-- Big Grid -->
-  <g transform="translate(140, 160)">
-    <!-- 4x4 Grid representation -->
-    <rect x="0" y="0" width="40" height="40" fill="#0d1117" stroke="#30363d"/>
-    <rect x="45" y="0" width="40" height="40" fill="#0d1117" stroke="#30363d"/>
-    <rect x="90" y="0" width="40" height="40" fill="#0d1117" stroke="#30363d"/>
-    <rect x="135" y="0" width="40" height="40" fill="#0d1117" stroke="#30363d"/>
-    <rect x="0" y="45" width="40" height="40" fill="#0d1117" stroke="#30363d"/>
-    <rect x="45" y="45" width="40" height="40" fill="#0d1117" stroke="#30363d"/>
-    <rect x="90" y="45" width="40" height="40" fill="#0d1117" stroke="#30363d"/>
-    <rect x="135" y="45" width="40" height="40" fill="#0d1117" stroke="#30363d"/>
-    <rect x="0" y="90" width="40" height="40" fill="#0d1117" stroke="#30363d"/>
-    <rect x="45" y="90" width="40" height="40" fill="#0d1117" stroke="#30363d"/>
-    <rect x="90" y="90" width="40" height="40" fill="#0d1117" stroke="#30363d"/>
-    <rect x="135" y="90" width="40" height="40" fill="#0d1117" stroke="#30363d"/>
-    <rect x="0" y="135" width="40" height="40" fill="#0d1117" stroke="#30363d"/>
-    <rect x="45" y="135" width="40" height="40" fill="#0d1117" stroke="#30363d"/>
-    <rect x="90" y="135" width="40" height="40" fill="#0d1117" stroke="#30363d"/>
-    <rect x="135" y="135" width="40" height="40" fill="#0d1117" stroke="#30363d"/>
-    <!-- Red Cross -->
-    <line x1="0" y1="0" x2="175" y2="175" class="cross"/>
-    <line x1="175" y1="0" x2="0" y2="175" class="cross"/>
+  <rect x="165" y="70" width="90" height="40" rx="5" fill="#FEE2E2" stroke="#DC2626" stroke-width="2"/>
+  <text x="210" y="88" font-size="12" font-weight="bold" text-anchor="middle" fill="#991B1B">S = QK^T</text>
+  <text x="210" y="102" font-size="10" text-anchor="middle" fill="#991B1B">O(T²) stored</text>
+
+  <line x1="255" y1="90" x2="350" y2="90" stroke="#000" stroke-width="2" marker-end="url(#arrow_black)"/>
+  <text x="302" y="85" font-size="10" font-style="italic" fill="#EA580C" text-anchor="middle">HBM write + read</text>
+
+  <rect x="355" y="70" width="100" height="40" rx="5" fill="#FEE2E2" stroke="#DC2626" stroke-width="2"/>
+  <text x="405" y="88" font-size="12" font-weight="bold" text-anchor="middle" fill="#991B1B">P = softmax(S)</text>
+  <text x="405" y="102" font-size="10" text-anchor="middle" fill="#991B1B">O(T²) stored</text>
+
+  <line x1="455" y1="90" x2="510" y2="90" stroke="#000" stroke-width="2" marker-end="url(#arrow_black)"/>
+  <text x="482" y="85" font-size="10" font-style="italic" fill="#EA580C" text-anchor="middle">HBM read</text>
+
+  <rect x="515" y="70" width="60" height="40" rx="5" fill="#F3F4F6" stroke="#374151" stroke-width="2"/>
+  <text x="545" y="95" font-size="12" font-weight="bold" text-anchor="middle" fill="#111827">O = PV</text>
+
+  <line x1="575" y1="90" x2="625" y2="90" stroke="#000" stroke-width="2" marker-end="url(#arrow_black)"/>
+  <text x="600" y="85" font-size="10" font-style="italic" fill="#EA580C" text-anchor="middle">HBM write</text>
+
+  <rect x="630" y="70" width="60" height="40" rx="5" fill="#F3F4F6" stroke="#374151" stroke-width="2"/>
+  <text x="660" y="95" font-size="12" font-weight="bold" text-anchor="middle" fill="#111827">Output</text>
+
+  <!-- DIVIDER -->
+  <line x1="20" y1="160" x2="680" y2="160" stroke="#9CA3AF" stroke-width="2"/>
+  <circle cx="350" cy="160" r="15" fill="#fff" stroke="#9CA3AF" stroke-width="2"/>
+  <text x="350" y="164" font-size="12" font-style="italic" text-anchor="middle" fill="#4B5563">vs.</text>
+
+  <!-- BOTTOM ROW -->
+  <text x="20" y="210" font-size="16" font-weight="bold" fill="#16A34A">FlashAttention</text>
+
+  <rect x="20" y="240" width="90" height="40" rx="5" fill="#F3F4F6" stroke="#374151" stroke-width="2"/>
+  <text x="65" y="265" font-size="12" font-weight="bold" text-anchor="middle" fill="#111827">Q,K,V in HBM</text>
+
+  <line x1="110" y1="260" x2="220" y2="260" stroke="#000" stroke-width="2" marker-end="url(#arrow_black)"/>
+  <text x="165" y="255" font-size="10" font-style="italic" fill="#16A34A" text-anchor="middle">small tile read</text>
+
+  <text x="350" y="220" font-size="12" font-weight="bold" fill="#111827" text-anchor="middle">No intermediate S or P ever stored in HBM</text>
+
+  <rect x="225" y="230" width="250" height="60" rx="5" fill="#DCFCE7" stroke="#16A34A" stroke-width="3"/>
+  <text x="350" y="255" font-size="14" font-weight="bold" text-anchor="middle" fill="#16A34A">SRAM Tile</text>
+  <text x="350" y="275" font-size="10" text-anchor="middle" fill="#16A34A">~20MB on-chip</text>
+  <text x="350" y="305" font-size="11" text-anchor="middle" fill="#111827">Tiled compute: partial softmax + partial O</text>
+
+  <line x1="475" y1="260" x2="625" y2="260" stroke="#000" stroke-width="2" marker-end="url(#arrow_black)"/>
+  <text x="550" y="255" font-size="10" font-style="italic" fill="#16A34A" text-anchor="middle">single HBM write</text>
+
+  <rect x="630" y="240" width="60" height="40" rx="5" fill="#F3F4F6" stroke="#374151" stroke-width="2"/>
+  <text x="660" y="265" font-size="12" font-weight="bold" text-anchor="middle" fill="#111827">Output</text>
+
+  <!-- TABLE -->
+  <g transform="translate(100, 360)">
+    <rect x="0" y="0" width="500" height="100" fill="none" stroke="#374151" stroke-width="2"/>
+    <rect x="0" y="0" width="500" height="25" fill="#F3F4F6"/>
+    <rect x="0" y="50" width="500" height="25" fill="#F3F4F6"/>
+    
+    <line x1="150" y1="0" x2="150" y2="100" stroke="#374151" stroke-width="1"/>
+    <line x1="325" y1="0" x2="325" y2="100" stroke="#374151" stroke-width="1"/>
+    
+    <!-- Header -->
+    <text x="75" y="17" font-size="12" font-weight="bold" text-anchor="middle" fill="#111827">Metric</text>
+    <text x="237" y="17" font-size="12" font-weight="bold" text-anchor="middle" fill="#111827">Standard Attention</text>
+    <text x="412" y="17" font-size="12" font-weight="bold" text-anchor="middle" fill="#111827">FlashAttention</text>
+    
+    <!-- Row 1 -->
+    <text x="75" y="42" font-size="12" text-anchor="middle" fill="#111827">Peak Memory</text>
+    <text x="237" y="42" font-size="12" text-anchor="middle" fill="#111827">O(T²)</text>
+    <text x="412" y="42" font-size="12" text-anchor="middle" fill="#111827">O(T)</text>
+
+    <!-- Row 2 -->
+    <text x="75" y="67" font-size="12" text-anchor="middle" fill="#111827">HBM Reads</text>
+    <text x="237" y="67" font-size="12" text-anchor="middle" fill="#111827">3× (high)</text>
+    <text x="412" y="67" font-size="12" text-anchor="middle" fill="#111827">1× (minimal)</text>
+
+    <!-- Row 3 -->
+    <text x="75" y="92" font-size="12" text-anchor="middle" fill="#111827">Speed</text>
+    <text x="237" y="92" font-size="12" text-anchor="middle" fill="#111827">Baseline 1×</text>
+    <text x="412" y="92" font-size="12" text-anchor="middle" fill="#111827">2–4× faster</text>
   </g>
-  <text x="230" y="380" class="sub-text" style="fill:#f85149; font-weight:bold;">O(N²) Intermediate Score Matrix</text>
-  <text x="230" y="405" class="sub-text">Materializing QK^T in Slow HBM (VRAM) = Bottleneck</text>
-
-  <!-- Divider -->
-  <line x1="450" y1="80" x2="450" y2="430" stroke="#30363d" stroke-width="2" stroke-dasharray="4,4"/>
-
-  <!-- Right Side: FlashAttention (Tiling) -->
-  <rect x="480" y="80" width="380" height="350" rx="10" fill="#161b22" stroke="#3fb950" stroke-width="2"/>
-  <text x="670" y="110" class="box-title" style="fill:#3fb950;">FlashAttention (Tiled Execution)</text>
-
-  <!-- Blocks -->
-  <g transform="translate(540, 160)">
-    <!-- SRAM Box -->
-    <rect x="0" y="-10" width="260" height="150" rx="8" fill="url(#grad-sram)" stroke="#3fb950"/>
-    <text x="130" y="15" class="box-title">SRAM (Fast Cache)</text>
-
-    <!-- Q, K, V Blocks -->
-    <rect x="20" y="40" width="60" height="30" fill="#1f6feb" rx="4"/>
-    <text x="50" y="60" class="box-text">Q_block</text>
-
-    <rect x="100" y="40" width="60" height="30" fill="#d97706" rx="4"/>
-    <text x="130" y="60" class="box-text">K_block</text>
-
-    <rect x="180" y="40" width="60" height="30" fill="#8957e5" rx="4"/>
-    <text x="210" y="60" class="box-text">V_block</text>
-
-    <!-- Computing -->
-    <rect x="70" y="90" width="120" height="30" fill="#21262d" rx="4" stroke="#3fb950" stroke-width="1.5"/>
-    <text x="130" y="110" class="box-text">Compute Softmax</text>
-  </g>
-
-  <line x1="670" y1="310" x2="670" y2="340" class="arrow"/>
-  
-  <rect x="620" y="340" width="100" height="30" fill="#2ea043" rx="4"/>
-  <text x="670" y="360" class="box-text">Output O_block</text>
-
-  <text x="670" y="405" class="sub-text" style="fill:#7ee787; font-weight:bold;">Load small blocks into fast SRAM</text>
-  <text x="670" y="420" class="sub-text" style="fill:#7ee787;">Compute block-by-block, write O(N) output directly</text>
-
 </svg>
